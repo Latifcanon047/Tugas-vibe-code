@@ -101,46 +101,44 @@ export default function Home() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center px-4 py-10">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading transactions...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-900 mx-auto mb-4"></div>
+          <p className="text-slate-700">Loading transactions...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-2">
-            💰 Simple Finance Tracker
-          </h1>
-          <p className="text-gray-600">
-            Manage your income and expenses easily
-          </p>
+    <main className="min-h-screen bg-slate-100 py-10 px-4">
+      <div className="mx-auto max-w-7xl">
+        <div className="rounded-[2rem] bg-gradient-to-r from-slate-900 via-slate-800 to-slate-950 p-10 shadow-2xl text-white mb-10 overflow-hidden">
+          <div className="max-w-3xl">
+            <p className="text-sm uppercase tracking-[0.35em] text-slate-400 mb-4">
+              Finance Dashboard
+            </p>
+            <h1 className="text-4xl sm:text-5xl font-semibold mb-3">
+              Simple Finance Tracker
+            </h1>
+            <p className="text-slate-300 text-base sm:text-lg leading-7">
+              Lihat ringkasan pemasukan, pengeluaran, dan saldo Anda secara
+              cepat dengan tampilan dashboard yang bersih.
+            </p>
+          </div>
         </div>
 
-        {/* Summary Cards */}
         <Summary transactions={transactions} />
 
-        {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Form */}
-          <div className="lg:col-span-1">
+        <div className="grid grid-cols-1 xl:grid-cols-[380px_minmax(0,1fr)] gap-6">
+          <div>
             <TransactionForm
               onSubmit={handleAddTransaction}
               isLoading={isSubmitting}
             />
           </div>
 
-          {/* Transaction List */}
-          <div className="lg:col-span-2">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              Recent Transactions
-            </h2>
+          <div>
             <TransactionList
               transactions={transactions}
               onDelete={handleDeleteTransaction}

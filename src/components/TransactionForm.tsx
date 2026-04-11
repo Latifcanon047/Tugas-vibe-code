@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { FormEvent, useState } from 'react';
+import { FormEvent, useState } from "react";
 
 interface TransactionFormProps {
   onSubmit: (data: {
     title: string;
     amount: number;
-    type: 'income' | 'expense';
+    type: "income" | "expense";
   }) => void;
   isLoading?: boolean;
 }
@@ -15,21 +15,21 @@ export default function TransactionForm({
   onSubmit,
   isLoading = false,
 }: TransactionFormProps) {
-  const [title, setTitle] = useState('');
-  const [amount, setAmount] = useState('');
-  const [type, setType] = useState<'income' | 'expense'>('expense');
+  const [title, setTitle] = useState("");
+  const [amount, setAmount] = useState("");
+  const [type, setType] = useState<"income" | "expense">("expense");
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
     if (!title.trim() || !amount.trim()) {
-      alert('Please fill in all fields');
+      alert("Please fill in all fields");
       return;
     }
 
     const numAmount = parseFloat(amount);
     if (isNaN(numAmount) || numAmount <= 0) {
-      alert('Please enter a valid amount');
+      alert("Please enter a valid amount");
       return;
     }
 
@@ -39,39 +39,44 @@ export default function TransactionForm({
       type,
     });
 
-    setTitle('');
-    setAmount('');
-    setType('expense');
+    setTitle("");
+    setAmount("");
+    setType("expense");
   };
 
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-white rounded-lg shadow-md p-6 mb-6"
+      className="bg-white rounded-3xl shadow-xl border border-slate-200 p-6 mb-6"
     >
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">
-        Add Transaction
-      </h2>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        {/* Title Input */}
+      <div className="flex flex-col gap-4 mb-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <p className="text-sm uppercase tracking-[0.3em] text-slate-400">
+            Add transaction
+          </p>
+          <h2 className="text-2xl font-semibold text-slate-900">
+            Input new record
+          </h2>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-2">
             Title
           </label>
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g., Salary, Groceries"
+            placeholder="Salary, Groceries"
             disabled={isLoading}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+            className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100 disabled:bg-slate-100"
           />
         </div>
 
-        {/* Amount Input */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-2">
             Amount
           </label>
           <input
@@ -82,49 +87,59 @@ export default function TransactionForm({
             step="0.01"
             min="0"
             disabled={isLoading}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+            className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100 disabled:bg-slate-100"
           />
         </div>
       </div>
 
-      {/* Type Selection */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-slate-700 mb-3">
           Type
         </label>
-        <div className="flex gap-4">
-          <label className="flex items-center">
+        <div className="grid grid-cols-2 gap-3">
+          <label
+            className={`flex cursor-pointer items-center justify-center rounded-2xl border px-4 py-3 text-sm font-medium transition ${
+              type === "income"
+                ? "border-emerald-500 bg-emerald-50 text-emerald-900"
+                : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+            }`}
+          >
             <input
               type="radio"
               value="income"
-              checked={type === 'income'}
-              onChange={(e) => setType(e.target.value as 'income' | 'expense')}
+              checked={type === "income"}
+              onChange={(e) => setType(e.target.value as "income" | "expense")}
               disabled={isLoading}
-              className="mr-2 w-4 h-4"
+              className="sr-only"
             />
-            <span className="text-green-600 font-medium">Income</span>
+            Income
           </label>
-          <label className="flex items-center">
+          <label
+            className={`flex cursor-pointer items-center justify-center rounded-2xl border px-4 py-3 text-sm font-medium transition ${
+              type === "expense"
+                ? "border-rose-500 bg-rose-50 text-rose-900"
+                : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+            }`}
+          >
             <input
               type="radio"
               value="expense"
-              checked={type === 'expense'}
-              onChange={(e) => setType(e.target.value as 'income' | 'expense')}
+              checked={type === "expense"}
+              onChange={(e) => setType(e.target.value as "income" | "expense")}
               disabled={isLoading}
-              className="mr-2 w-4 h-4"
+              className="sr-only"
             />
-            <span className="text-red-600 font-medium">Expense</span>
+            Expense
           </label>
         </div>
       </div>
 
-      {/* Submit Button */}
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded-lg transition"
+        className="w-full rounded-2xl bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 text-white font-semibold py-3 transition"
       >
-        {isLoading ? 'Adding...' : 'Add Transaction'}
+        {isLoading ? "Adding..." : "Add Transaction"}
       </button>
     </form>
   );

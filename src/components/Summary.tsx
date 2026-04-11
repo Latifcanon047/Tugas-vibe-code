@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
 interface Transaction {
-  type: 'income' | 'expense';
+  type: "income" | "expense";
   amount: number;
 }
 
@@ -11,56 +11,58 @@ interface SummaryProps {
 
 export default function Summary({ transactions }: SummaryProps) {
   const totalIncome = transactions
-    .filter((t) => t.type === 'income')
+    .filter((t) => t.type === "income")
     .reduce((sum, t) => sum + t.amount, 0);
 
   const totalExpense = transactions
-    .filter((t) => t.type === 'expense')
+    .filter((t) => t.type === "expense")
     .reduce((sum, t) => sum + t.amount, 0);
 
   const balance = totalIncome - totalExpense;
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
       minimumFractionDigits: 0,
     }).format(amount);
   };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      {/* Total Income */}
-      <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg shadow-md p-6 border-l-4 border-green-500">
-        <h3 className="text-sm font-medium text-gray-600 mb-1">Total Income</h3>
-        <p className="text-3xl font-bold text-green-600">
+      <div className="rounded-3xl bg-white shadow-xl border border-slate-200 p-6">
+        <span className="inline-flex rounded-full bg-green-50 text-green-700 px-3 py-1 text-xs font-semibold mb-4">
+          Total Income
+        </span>
+        <p className="text-3xl font-semibold text-slate-900">
           {formatCurrency(totalIncome)}
         </p>
-      </div>
-
-      {/* Total Expense */}
-      <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-lg shadow-md p-6 border-l-4 border-red-500">
-        <h3 className="text-sm font-medium text-gray-600 mb-1">Total Expense</h3>
-        <p className="text-3xl font-bold text-red-600">
-          {formatCurrency(totalExpense)}
+        <p className="mt-3 text-sm text-slate-500">
+          Semua pemasukan yang masuk.
         </p>
       </div>
 
-      {/* Balance */}
-      <div
-        className={`rounded-lg shadow-md p-6 border-l-4 ${
-          balance >= 0
-            ? 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-500'
-            : 'bg-gradient-to-br from-orange-50 to-orange-100 border-orange-500'
-        }`}
-      >
-        <h3 className="text-sm font-medium text-gray-600 mb-1">Balance</h3>
-        <p
-          className={`text-3xl font-bold ${
-            balance >= 0 ? 'text-blue-600' : 'text-orange-600'
-          }`}
-        >
+      <div className="rounded-3xl bg-white shadow-xl border border-slate-200 p-6">
+        <span className="inline-flex rounded-full bg-red-50 text-red-700 px-3 py-1 text-xs font-semibold mb-4">
+          Total Expense
+        </span>
+        <p className="text-3xl font-semibold text-slate-900">
+          {formatCurrency(totalExpense)}
+        </p>
+        <p className="mt-3 text-sm text-slate-500">
+          Semua pengeluaran yang keluar.
+        </p>
+      </div>
+
+      <div className="rounded-3xl bg-white shadow-xl border border-slate-200 p-6">
+        <span className="inline-flex rounded-full bg-sky-50 text-sky-700 px-3 py-1 text-xs font-semibold mb-4">
+          Balance
+        </span>
+        <p className="text-3xl font-semibold text-slate-900">
           {formatCurrency(balance)}
+        </p>
+        <p className="mt-3 text-sm text-slate-500">
+          Selisih income dan expense saat ini.
         </p>
       </div>
     </div>
