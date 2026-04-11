@@ -17,6 +17,7 @@ export default function Home() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [filter, setFilter] = useState<"all" | "income" | "expense">("all");
 
   // Fetch transactions
   const fetchTransactions = async () => {
@@ -99,6 +100,11 @@ export default function Home() {
     }
   };
 
+  const filteredTransactions =
+    filter === "all"
+      ? transactions
+      : transactions.filter((transaction) => transaction.type === filter);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-100 flex items-center justify-center px-4 py-10">
@@ -113,7 +119,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-slate-100 py-10 px-4">
       <div className="mx-auto max-w-7xl">
-        <div className="rounded-[2rem] bg-gradient-to-r from-slate-900 via-slate-800 to-slate-950 p-10 shadow-2xl text-white mb-10 overflow-hidden">
+        <div className="rounded-4xl bg-linear-to-r from-slate-900 via-slate-800 to-slate-950 p-10 shadow-2xl text-white mb-10 overflow-hidden">
           <div className="max-w-3xl">
             <p className="text-sm uppercase tracking-[0.35em] text-slate-400 mb-4">
               Finance Dashboard
@@ -139,8 +145,40 @@ export default function Home() {
           </div>
 
           <div>
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-white p-5 shadow-xl border border-slate-200">
+              <div>
+                <p className="text-sm font-semibold text-slate-900">
+                  Filter Transactions
+                </p>
+                <p className="text-sm text-slate-500">
+                  Pilih tipe transaksi untuk ditampilkan.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                {(["all", "income", "expense"] as const).map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => setFilter(option)}
+                    className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+                      filter === option
+                        ? "bg-slate-900 text-white shadow-lg"
+                        : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                    }`}
+                  >
+                    {option === "all"
+                      ? "All"
+                      : option === "income"
+                        ? "Income"
+                        : "Expense"}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <TransactionList
-              transactions={transactions}
+              transactions={filteredTransactions}
               onDelete={handleDeleteTransaction}
               isLoading={isSubmitting}
             />

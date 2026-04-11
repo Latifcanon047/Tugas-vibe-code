@@ -19,6 +19,12 @@ export default function TransactionForm({
   const [amount, setAmount] = useState("");
   const [type, setType] = useState<"income" | "expense">("expense");
 
+  const formatAmountDisplay = (value: string) => {
+    const onlyDigits = value.replace(/\D/g, "");
+    if (!onlyDigits) return "";
+    return onlyDigits.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  };
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
@@ -27,7 +33,8 @@ export default function TransactionForm({
       return;
     }
 
-    const numAmount = parseFloat(amount);
+    const rawAmount = amount.replace(/\./g, "");
+    const numAmount = parseFloat(rawAmount);
     if (isNaN(numAmount) || numAmount <= 0) {
       alert("Please enter a valid amount");
       return;
@@ -80,12 +87,11 @@ export default function TransactionForm({
             Amount
           </label>
           <input
-            type="number"
+            type="text"
+            inputMode="numeric"
             value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="0.00"
-            step="0.01"
-            min="0"
+            onChange={(e) => setAmount(formatAmountDisplay(e.target.value))}
+            placeholder="0"
             disabled={isLoading}
             className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100 disabled:bg-slate-100"
           />
