@@ -145,7 +145,7 @@ export default function Home() {
 
         <Summary transactions={transactions} />
 
-        <TransactionChart income={totalIncome} expense={totalExpense} />
+        <TransactionChart transactions={transactions} />
 
         <div className="grid grid-cols-1 xl:grid-cols-[380px_minmax(0,1fr)] gap-6">
           <div>

@@ -1,58 +1,136 @@
 "use client";
 
-import { Bar } from "react-chartjs-2";
+import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
-  BarElement,
+  PointElement,
+  LineElement,
   Title,
   Tooltip,
   Legend,
+  Filler,
 } from "chart.js";
 import { ChartData, ChartOptions } from "chart.js";
 
 ChartJS.register(
   CategoryScale,
   LinearScale,
-  BarElement,
+  PointElement,
+  LineElement,
   Title,
   Tooltip,
   Legend,
+  Filler,
 );
 
 interface TransactionChartProps {
-  income: number;
-  expense: number;
+  transactions: Array<{
+    id: number;
+    title: string;
+    amount: number;
+    type: "income" | "expense";
+    createdAt: string;
+  }>;
 }
 
 export default function TransactionChart({
-  income,
-  expense,
+  transactions,
 }: TransactionChartProps) {
-  const data: ChartData<"bar"> = {
-    labels: ["Income", "Expense"],
+  // Group transactions by date (YYYY-MM-DD) for current month
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
+  const dailyData: Record<string, { income: number; expense: number }> = {};
+
+  transactions.forEach((transaction) => {
+    const date = new Date(transaction.createdAt);
+
+    // Only include transactions from current month
+    if (
+      date.getMonth() === currentMonth &&
+      date.getFullYear() === currentYear
+    ) {
+      const dateKey = date.toISOString().split("T")[0]; // YYYY-MM-DD
+
+      if (!dailyData[dateKey]) {
+        dailyData[dateKey] = { income: 0, expense: 0 };
+      }
+
+      if (transaction.type === "income") {
+        dailyData[dateKey].income += transaction.amount;
+      } else {
+        dailyData[dateKey].expense += transaction.amount;
+      }
+    }
+  });
+
+  // Sort dates and prepare chart data
+  const sortedDates = Object.keys(dailyData).sort();
+  const labels = sortedDates.map((date) => {
+    const d = new Date(date);
+    return d.toLocaleDateString("id-ID", { month: "short", day: "numeric" });
+  });
+
+  const incomeData = sortedDates.map((date) => dailyData[date].income);
+  const expenseData = sortedDates.map((date) => dailyData[date].expense);
+
+  const data: ChartData<"line"> = {
+    labels,
     datasets: [
       {
-        label: "Amount",
-        data: [income, expense],
-        backgroundColor: ["#22c55e", "#ef4444"],
-        borderRadius: 12,
-        maxBarThickness: 48,
+        label: "Income",
+        data: incomeData,
+        borderColor: "#22c55e",
+        backgroundColor: "rgba(34, 197, 94, 0.05)",
+        borderWidth: 3,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 5,
+        pointBackgroundColor: "#22c55e",
+        pointBorderColor: "#fff",
+        pointBorderWidth: 2,
+        pointHoverRadius: 7,
+      },
+      {
+        label: "Expense",
+        data: expenseData,
+        borderColor: "#ef4444",
+        backgroundColor: "rgba(239, 68, 68, 0.05)",
+        borderWidth: 3,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 5,
+        pointBackgroundColor: "#ef4444",
+        pointBorderColor: "#fff",
+        pointBorderWidth: 2,
+        pointHoverRadius: 7,
       },
     ],
   };
 
-  const options: ChartOptions<"bar"> = {
+  const options: ChartOptions<"line"> = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        display: false,
+        display: true,
+        position: "top",
+        labels: {
+          usePointStyle: true,
+          padding: 15,
+          font: {
+            size: 13,
+            weight: "bold",
+          },
+          color: "#0f172a",
+        },
       },
       title: {
         display: true,
-        text: "Income vs Expense",
+        text: "Income vs Expense Trend",
         color: "#0f172a",
         font: {
           size: 16,
@@ -60,10 +138,15 @@ export default function TransactionChart({
         },
       },
       tooltip: {
+        backgroundColor: "rgba(0,0,0,0.8)",
+        padding: 12,
+        titleFont: { size: 13, weight: "bold" },
+        bodyFont: { size: 12 },
         callbacks: {
           label: (context) => {
-            const value = context.parsed.y ?? context.parsed;
-            return `Rp ${value.toLocaleString("id-ID")}`;
+            const value = context.parsed.y;
+            if (value === null || value === undefined) return "";
+            return `${context.dataset.label}: Rp ${value.toLocaleString("id-ID")}`;
           },
         },
       },
@@ -71,10 +154,14 @@ export default function TransactionChart({
     scales: {
       x: {
         grid: {
-          display: false,
+          display: true,
+          color: "rgba(226, 232, 240, 0.3)",
         },
         ticks: {
-          color: "#475569",
+          color: "#64748b",
+          font: {
+            size: 12,
+          },
         },
       },
       y: {
@@ -83,7 +170,10 @@ export default function TransactionChart({
           color: "#e2e8f0",
         },
         ticks: {
-          color: "#475569",
+          color: "#64748b",
+          font: {
+            size: 12,
+          },
           callback: (value) => {
             if (typeof value === "number") {
               return `Rp ${value.toLocaleString("id-ID")}`;
@@ -98,7 +188,7 @@ export default function TransactionChart({
   return (
     <div className="rounded-3xl bg-white border border-slate-200 p-6 shadow-xl mb-6">
       <div className="h-80">
-        <Bar data={data} options={options} />
+        <Line data={data} options={options} />
       </div>
     </div>
   );
