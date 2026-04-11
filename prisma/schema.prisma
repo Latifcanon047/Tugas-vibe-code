@@ -14,6 +14,7 @@ enum TransactionType {
 
 model Transaction {
   id        Int             @id @default(autoincrement())
+  title     String          // ✅ TAMBAH INI
   amount    Float
   type      TransactionType
   createdAt DateTime        @default(now())
