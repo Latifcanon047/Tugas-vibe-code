@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Summary from "@/components/Summary";
+import TransactionChart from "@/components/TransactionChart";
 import TransactionForm from "@/components/TransactionForm";
 import TransactionList from "@/components/TransactionList";
 
@@ -105,6 +106,14 @@ export default function Home() {
       ? transactions
       : transactions.filter((transaction) => transaction.type === filter);
 
+  const totalIncome = transactions
+    .filter((transaction) => transaction.type === "income")
+    .reduce((sum, transaction) => sum + transaction.amount, 0);
+
+  const totalExpense = transactions
+    .filter((transaction) => transaction.type === "expense")
+    .reduce((sum, transaction) => sum + transaction.amount, 0);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-100 flex items-center justify-center px-4 py-10">
@@ -135,6 +144,8 @@ export default function Home() {
         </div>
 
         <Summary transactions={transactions} />
+
+        <TransactionChart income={totalIncome} expense={totalExpense} />
 
         <div className="grid grid-cols-1 xl:grid-cols-[380px_minmax(0,1fr)] gap-6">
           <div>
