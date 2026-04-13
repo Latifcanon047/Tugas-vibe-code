@@ -20,5 +20,11 @@ export default async function TransactionChartWithData() {
       })
     : [];
 
-  return <TransactionChart transactions={transactions} />;
+  const formattedTransactions = transactions.map((t) => ({
+    ...t,
+    date: t.date.toISOString(),
+    createdAt: t.createdAt.toISOString(),
+  }));
+
+  return <TransactionChart transactions={formattedTransactions} />;
 }
