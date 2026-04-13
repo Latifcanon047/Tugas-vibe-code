@@ -53,8 +53,7 @@ export default function TransactionChart({
       date.getMonth() === currentMonth &&
       date.getFullYear() === currentYear
     ) {
-      const dateKey = date.toISOString().split("T")[0]; // YYYY-MM-DD
-
+      const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
       if (!dailyData[dateKey]) {
         dailyData[dateKey] = { income: 0, expense: 0 };
       }
@@ -67,15 +66,39 @@ export default function TransactionChart({
     }
   });
 
-  // Sort dates and prepare chart data
-  const sortedDates = Object.keys(dailyData).sort();
-  const labels = sortedDates.map((date) => {
-    const d = new Date(date);
+  // Generate all dates from 1st to today in current month
+  const allDates: string[] = [];
+  const firstDay = new Date(currentYear, currentMonth, 1);
+  const today = new Date(currentYear, currentMonth, now.getDate());
+
+  for (let d = new Date(firstDay); d <= today; d.setDate(d.getDate() + 1)) {
+    const dateKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    allDates.push(dateKey);
+  }
+
+  // Create cumulative data
+  let cumulativeIncome = 0;
+  let cumulativeExpense = 0;
+  const cumulativeIncomeData: number[] = [];
+  const cumulativeExpenseData: number[] = [];
+
+  allDates.forEach((dateKey) => {
+    if (dailyData[dateKey]) {
+      cumulativeIncome += dailyData[dateKey].income;
+      cumulativeExpense += dailyData[dateKey].expense;
+    }
+    cumulativeIncomeData.push(cumulativeIncome);
+    cumulativeExpenseData.push(cumulativeExpense);
+  });
+
+  // Create labels
+  const labels = allDates.map((dateKey) => {
+    const d = new Date(dateKey);
     return d.toLocaleDateString("id-ID", { month: "short", day: "numeric" });
   });
 
-  const incomeData = sortedDates.map((date) => dailyData[date].income);
-  const expenseData = sortedDates.map((date) => dailyData[date].expense);
+  const incomeData = cumulativeIncomeData;
+  const expenseData = cumulativeExpenseData;
 
   const data: ChartData<"line"> = {
     labels,
