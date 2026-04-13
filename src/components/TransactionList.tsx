@@ -1,12 +1,14 @@
 "use client";
 
 import { Trash2 } from "lucide-react";
+import { useState } from "react";
 
 interface Transaction {
   id: number;
   title: string;
   amount: number;
   type: "income" | "expense";
+  date: string;
   createdAt: string;
 }
 
@@ -16,12 +18,25 @@ interface TransactionListProps {
   isLoading?: boolean;
 }
 
+type SortOption = "date" | "createdAt";
+
 export default function TransactionList({
   transactions,
   onDelete,
   isLoading = false,
 }: TransactionListProps) {
+  const [sortBy, setSortBy] = useState<SortOption>("createdAt");
   const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("id-ID", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const formatCreatedAt = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("id-ID", {
       year: "numeric",
       month: "short",
@@ -38,6 +53,13 @@ export default function TransactionList({
     }).format(amount);
   };
 
+  // Sort transactions based on selected option
+  const sortedTransactions = [...transactions].sort((a, b) => {
+    const dateA = new Date(sortBy === "date" ? a.date : a.createdAt);
+    const dateB = new Date(sortBy === "date" ? b.date : b.createdAt);
+    return dateB.getTime() - dateA.getTime(); // Descending order
+  });
+
   if (transactions.length === 0) {
     return (
       <div className="bg-white rounded-3xl shadow-xl border border-slate-200 p-8 text-center text-slate-500">
@@ -52,13 +74,28 @@ export default function TransactionList({
   return (
     <div className="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
       <div className="flex flex-col gap-4 p-6 border-b border-slate-200 bg-slate-50">
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
-            Recent Activity
-          </p>
-          <p className="mt-1 text-base text-slate-600">
-            Latest income and expense transactions in one place.
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
+              Recent Activity
+            </p>
+            <p className="mt-1 text-base text-slate-600">
+              Latest income and expense transactions in one place.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <label className="text-sm font-medium text-slate-700">
+              Sort by:
+            </label>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as SortOption)}
+              className="rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-900 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
+            >
+              <option value="createdAt">Tanggal Input</option>
+              <option value="date">Tanggal Transaksi</option>
+            </select>
+          </div>
         </div>
       </div>
       <div className="overflow-x-auto">
@@ -77,13 +114,16 @@ export default function TransactionList({
               <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.15em]">
                 Date
               </th>
+              <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.15em]">
+                Created At
+              </th>
               <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-[0.15em]">
                 Action
               </th>
             </tr>
           </thead>
           <tbody className="bg-white">
-            {transactions.map((transaction) => (
+            {sortedTransactions.map((transaction) => (
               <tr
                 key={transaction.id}
                 className="border-b last:border-b-0 hover:bg-slate-50 transition-colors"
@@ -113,7 +153,10 @@ export default function TransactionList({
                   {formatCurrency(transaction.amount)}
                 </td>
                 <td className="px-6 py-5 text-sm text-slate-600">
-                  {formatDate(transaction.createdAt)}
+                  {formatDate(transaction.date)}
+                </td>
+                <td className="px-6 py-5 text-sm text-slate-600">
+                  {formatCreatedAt(transaction.createdAt)}
                 </td>
                 <td className="px-6 py-5 text-center">
                   <button

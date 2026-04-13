@@ -7,6 +7,7 @@ interface TransactionFormProps {
     title: string;
     amount: number;
     type: "income" | "expense";
+    date: string;
   }) => void;
   isLoading?: boolean;
 }
@@ -18,6 +19,9 @@ export default function TransactionForm({
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [type, setType] = useState<"income" | "expense">("expense");
+  const [date, setDate] = useState(
+    () => new Date().toISOString().split("T")[0],
+  );
 
   const formatAmountDisplay = (value: string) => {
     const onlyDigits = value.replace(/\D/g, "");
@@ -28,7 +32,7 @@ export default function TransactionForm({
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
-    if (!title.trim() || !amount.trim()) {
+    if (!title.trim() || !amount.trim() || !date.trim()) {
       alert("Please fill in all fields");
       return;
     }
@@ -44,11 +48,13 @@ export default function TransactionForm({
       title: title.trim(),
       amount: numAmount,
       type,
+      date: new Date(date).toISOString(),
     });
 
     setTitle("");
     setAmount("");
     setType("expense");
+    setDate(new Date().toISOString().split("T")[0]);
   };
 
   return (
@@ -92,6 +98,19 @@ export default function TransactionForm({
             value={amount}
             onChange={(e) => setAmount(formatAmountDisplay(e.target.value))}
             placeholder="0"
+            disabled={isLoading}
+            className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100 disabled:bg-slate-100"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-2">
+            Date
+          </label>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
             disabled={isLoading}
             className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100 disabled:bg-slate-100"
           />

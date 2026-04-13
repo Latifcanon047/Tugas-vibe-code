@@ -25,6 +25,7 @@ model Transaction {
   title     String          // ✅ TAMBAH INI
   amount    Float
   type      TransactionType
+  date      DateTime        @default(now())
   createdAt DateTime        @default(now())
   userId    String          @default("default-user")
   user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)

@@ -31,7 +31,7 @@ interface TransactionChartProps {
     title: string;
     amount: number;
     type: "income" | "expense";
-    createdAt: string;
+    date: string;
   }>;
 }
 
@@ -46,7 +46,7 @@ export default function TransactionChart({
   const dailyData: Record<string, { income: number; expense: number }> = {};
 
   transactions.forEach((transaction) => {
-    const date = new Date(transaction.createdAt);
+    const date = new Date(transaction.date);
 
     // Only include transactions from current month
     if (
@@ -81,6 +81,8 @@ export default function TransactionChart({
   let cumulativeExpense = 0;
   const cumulativeIncomeData: number[] = [];
   const cumulativeExpenseData: number[] = [];
+  const incomedata: number[] = [];
+  const expensedata: number[] = [];
 
   allDates.forEach((dateKey) => {
     if (dailyData[dateKey]) {
@@ -89,6 +91,8 @@ export default function TransactionChart({
     }
     cumulativeIncomeData.push(cumulativeIncome);
     cumulativeExpenseData.push(cumulativeExpense);
+    incomedata.push(dailyData[dateKey]?.income || 0);
+    expensedata.push(dailyData[dateKey]?.expense || 0);
   });
 
   // Create labels
@@ -106,6 +110,7 @@ export default function TransactionChart({
       {
         label: "Income",
         data: incomeData,
+        dailyData: incomedata,
         borderColor: "#22c55e",
         backgroundColor: "rgba(34, 197, 94, 0.05)",
         borderWidth: 3,
@@ -120,6 +125,7 @@ export default function TransactionChart({
       {
         label: "Expense",
         data: expenseData,
+        dailyData: expensedata,
         borderColor: "#ef4444",
         backgroundColor: "rgba(239, 68, 68, 0.05)",
         borderWidth: 3,
@@ -131,7 +137,7 @@ export default function TransactionChart({
         pointBorderWidth: 2,
         pointHoverRadius: 7,
       },
-    ],
+    ] as unknown as ChartData<"line">["datasets"],
   };
 
   const options: ChartOptions<"line"> = {
@@ -167,7 +173,11 @@ export default function TransactionChart({
         bodyFont: { size: 12 },
         callbacks: {
           label: (context) => {
-            const value = context.parsed.y;
+            const dailyValues = (context.dataset as any).dailyData as
+              | number[]
+              | undefined;
+            const dailyValue = dailyValues?.[context.dataIndex];
+            const value = dailyValue ?? context.parsed.y;
             if (value === null || value === undefined) return "";
             return `${context.dataset.label}: Rp ${value.toLocaleString("id-ID")}`;
           },
