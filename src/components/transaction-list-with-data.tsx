@@ -20,5 +20,11 @@ export default async function TransactionListWithData() {
       })
     : [];
 
-  return <TransactionListWrapper transactions={transactions} />;
+  const formattedTransactions = transactions.map((t) => ({
+    ...t,
+    date: t.date.toISOString(),
+    createdAt: t.createdAt.toISOString(),
+  }));
+
+  return <TransactionListWrapper transactions={formattedTransactions} />;
 }
