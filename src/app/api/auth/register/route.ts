@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
 
     if (!email || !password) {
       return NextResponse.json(
-        { error: "Email and password are required" },
+        { error: "Email dan password harus diisi" },
         { status: 400 },
       );
     }
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
 
     if (existingUser) {
       return NextResponse.json(
-        { error: "User already exists" },
+        { error: "Email sudah terdaftar" },
         { status: 400 },
       );
     }
@@ -36,13 +36,13 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(
-      { message: "User created successfully" },
+      { message: "Registrasi berhasil" },
       { status: 201 },
     );
   } catch (error) {
     console.error("Registration error:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Terjadi kesalahan pada server" },
       { status: 500 },
     );
   }
