@@ -12,6 +12,7 @@ interface Transaction {
   title: string;
   amount: number;
   type: "income" | "expense";
+  date: string;
   createdAt: string;
 }
 
@@ -47,6 +48,7 @@ export default function Home() {
     title: string;
     amount: number;
     type: "income" | "expense";
+    date: string;
   }) => {
     try {
       setIsSubmitting(true);
@@ -63,7 +65,7 @@ export default function Home() {
         throw new Error(error.error || "Failed to create transaction");
       }
 
-      const newTransaction = await response.json();
+      const newTransaction: Transaction = await response.json();
       setTransactions([newTransaction, ...transactions]);
       alert("Transaction added successfully!");
     } catch (error) {
