@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import Summary from "@/components/Summary";
 import TransactionChart from "@/components/TransactionChart";
 import TransactionForm from "@/components/TransactionForm";
@@ -21,13 +22,21 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [filter, setFilter] = useState<"all" | "income" | "expense">("all");
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const router = useRouter();
 
-  // Fetch transactions
+  // Fetch transactions for logged in user
   const fetchTransactions = async () => {
     try {
       setIsLoading(true);
       const response = await fetch("/api/transactions");
-      if (!response.ok) throw new Error("Failed to fetch");
+      if (!response.ok) {
+        if (response.status === 401) {
+          setTransactions([]);
+          return;
+        }
+        throw new Error("Failed to fetch");
+      }
       const data = await response.json();
       setTransactions(data);
     } catch (error) {
@@ -38,10 +47,19 @@ export default function Home() {
     }
   };
 
-  // Initial fetch
+  // Initial fetch once session is resolved
+  const { data: session, status } = useSession();
+  const isAuthenticated = !!session?.user?.id;
+
   useEffect(() => {
+    if (status === "loading") return;
+    if (!isAuthenticated) {
+      setTransactions([]);
+      setIsLoading(false);
+      return;
+    }
     fetchTransactions();
-  }, []);
+  }, [isAuthenticated, status]);
 
   // Add transaction
   const handleAddTransaction = async (data: {
@@ -117,7 +135,29 @@ export default function Home() {
     .filter((transaction) => transaction.type === "expense")
     .reduce((sum, transaction) => sum + transaction.amount, 0);
 
-  const { data: session } = useSession();
+  const promptLogin = () => setShowLoginPrompt(true);
+  const closeLoginPrompt = () => setShowLoginPrompt(false);
+
+  const handleProtectedAddTransaction = async (data: {
+    title: string;
+    amount: number;
+    type: "income" | "expense";
+    date: string;
+  }) => {
+    if (!isAuthenticated) {
+      promptLogin();
+      return;
+    }
+    await handleAddTransaction(data);
+  };
+
+  const handleProtectedDeleteTransaction = async (id: number) => {
+    if (!isAuthenticated) {
+      promptLogin();
+      return;
+    }
+    await handleDeleteTransaction(id);
+  };
 
   if (isLoading) {
     return (
@@ -169,10 +209,38 @@ export default function Home() {
 
         <TransactionChart transactions={transactions} />
 
+        {showLoginPrompt && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4">
+            <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
+              <h2 className="text-xl font-semibold text-slate-900 mb-3">
+                Perlu login terlebih dahulu
+              </h2>
+              <p className="text-slate-600 mb-6">
+                Kamu harus login terlebih dahulu. Mau pindah ke halaman login?
+              </p>
+              <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+                <button
+                  onClick={closeLoginPrompt}
+                  className="rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                >
+                  Abaikan
+                </button>
+                <button
+                  onClick={() => router.push("/login")}
+                  className="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+                >
+                  Ya, Login
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 xl:grid-cols-[380px_minmax(0,1fr)] gap-6">
           <div>
             <TransactionForm
-              onSubmit={handleAddTransaction}
+              onSubmit={handleProtectedAddTransaction}
+              onUnauthenticatedAccess={promptLogin}
               isLoading={isSubmitting}
             />
           </div>
@@ -212,7 +280,7 @@ export default function Home() {
 
             <TransactionList
               transactions={filteredTransactions}
-              onDelete={handleDeleteTransaction}
+              onDelete={handleProtectedDeleteTransaction}
               isLoading={isSubmitting}
             />
           </div>
