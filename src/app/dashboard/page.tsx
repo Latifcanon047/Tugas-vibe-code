@@ -135,7 +135,11 @@ export default function Home() {
     .filter((transaction) => transaction.type === "expense")
     .reduce((sum, transaction) => sum + transaction.amount, 0);
 
-  const promptLogin = () => setShowLoginPrompt(true);
+  const promptLogin = () => {
+    if (status === 'unauthenticated') {
+      setShowLoginPrompt(true);
+    }
+  };
   const closeLoginPrompt = () => setShowLoginPrompt(false);
 
   const handleProtectedAddTransaction = async (data: {
@@ -144,7 +148,7 @@ export default function Home() {
     type: "income" | "expense";
     date: string;
   }) => {
-    if (!isAuthenticated) {
+    if (status === 'unauthenticated') {
       promptLogin();
       return;
     }
@@ -152,7 +156,7 @@ export default function Home() {
   };
 
   const handleProtectedDeleteTransaction = async (id: number) => {
-    if (!isAuthenticated) {
+    if (status === 'unauthenticated') {
       promptLogin();
       return;
     }
@@ -249,7 +253,6 @@ export default function Home() {
           <div>
             <TransactionForm
               onSubmit={handleProtectedAddTransaction}
-              onUnauthenticatedAccess={promptLogin}
               isLoading={isSubmitting}
             />
           </div>
