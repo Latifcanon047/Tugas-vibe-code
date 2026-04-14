@@ -32,7 +32,7 @@ export default function Summary({ transactions }: SummaryProps) {
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
       <div className="rounded-3xl bg-white shadow-xl border border-slate-200 p-6">
         <span className="inline-flex rounded-full bg-green-50 text-green-700 px-3 py-1 text-xs font-semibold mb-4">
-          Total Income
+          Total Pemasukan
         </span>
         <p className="text-3xl font-semibold text-slate-900">
           {formatCurrency(totalIncome)}
@@ -44,7 +44,7 @@ export default function Summary({ transactions }: SummaryProps) {
 
       <div className="rounded-3xl bg-white shadow-xl border border-slate-200 p-6">
         <span className="inline-flex rounded-full bg-red-50 text-red-700 px-3 py-1 text-xs font-semibold mb-4">
-          Total Expense
+          Total Pengeluaran
         </span>
         <p className="text-3xl font-semibold text-slate-900">
           {formatCurrency(totalExpense)}
@@ -56,13 +56,13 @@ export default function Summary({ transactions }: SummaryProps) {
 
       <div className="rounded-3xl bg-white shadow-xl border border-slate-200 p-6">
         <span className="inline-flex rounded-full bg-sky-50 text-sky-700 px-3 py-1 text-xs font-semibold mb-4">
-          Balance
+          Saldo
         </span>
         <p className="text-3xl font-semibold text-slate-900">
           {formatCurrency(balance)}
         </p>
         <p className="mt-3 text-sm text-slate-500">
-          Selisih income dan expense saat ini.
+          Selisih pemasukan dan pengeluaran saat ini.
         </p>
       </div>
     </div>

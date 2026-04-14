@@ -11,9 +11,10 @@ interface Transaction {
 
 interface TransactionChartWithDataProps {
   transactions: Transaction[];
-  mode: "month" | "year";
+  mode: "month" | "year" | "week";
   month: number;
   year: number;
+  weekNumber?: number;
 }
 
 export default function TransactionChartWithData({
@@ -21,6 +22,7 @@ export default function TransactionChartWithData({
   mode,
   month,
   year,
+  weekNumber,
 }: TransactionChartWithDataProps) {
   return (
     <TransactionChart
@@ -28,6 +30,7 @@ export default function TransactionChartWithData({
       mode={mode}
       month={month}
       year={year}
+      weekNumber={weekNumber}
     />
   );
 }

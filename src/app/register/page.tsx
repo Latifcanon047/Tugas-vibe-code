@@ -59,7 +59,7 @@ export default function Register() {
 return (
     <div className='min-h-screen flex items-center justify-center bg-linear-to-br from-blue-50 to-indigo-100'>
       <div className='bg-white p-8 rounded-lg shadow-md w-full max-w-md'>
-        <h1 className='text-2xl font-bold text-center mb-6 text-slate-900'>Register</h1>
+        <h1 className='text-2xl font-bold text-center mb-6 text-slate-900'>Daftar</h1>
         <form onSubmit={handleSubmit}>
           <div className='mb-4'>
             <label className='block text-slate-700 mb-2'>Email</label>
@@ -132,14 +132,14 @@ return (
                 Memproses...
               </>
             ) : (
-              'Register'
+              'Daftar'
             )}
           </button>
         </form>
         <p className='text-center mt-4 text-slate-600'>
-          Already have an account?{' '}
+          Sudah punya akun?{' '}
           <a href='/login' className='text-blue-500 hover:underline'>
-            Login
+            Masuk
           </a>
         </p>
       </div>

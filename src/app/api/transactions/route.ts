@@ -12,9 +12,10 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const mode = searchParams.get("mode"); // 'month' or 'year'
+    const mode = searchParams.get("mode"); // 'month', 'year', or 'week'
     const month = searchParams.get("month"); // 1-12
     const year = searchParams.get("year"); // YYYY
+    const week = searchParams.get("week"); // 1-53
 
     let whereClause: any = {
       userId: session.user.id,
@@ -26,6 +27,17 @@ export async function GET(request: NextRequest) {
       whereClause.date = {
         gte: startDate,
         lt: endDate,
+      };
+    } else if (mode === "week" && week && year && month) {
+      const weekNumber = parseInt(week);
+      const yearNum = parseInt(year);
+      const monthNum = parseInt(month);
+      const weekStart = new Date(yearNum, monthNum - 1, 1 + (weekNumber - 1) * 7);
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekEnd.getDate() + 6);
+      whereClause.date = {
+        gte: weekStart,
+        lt: new Date(weekEnd.getTime() + 86400000),
       };
     } else if (mode === "year" && year) {
       const startDate = new Date(parseInt(year), 0, 1);

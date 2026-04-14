@@ -24,7 +24,7 @@ export default function TransactionListWrapper({
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this transaction?")) {
+    if (!confirm("Apakah Anda yakin ingin menghapus transaksi ini?")) {
       return;
     }
 
@@ -36,15 +36,15 @@ export default function TransactionListWrapper({
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || "Failed to delete transaction");
+        throw new Error(error.error || "Gagal menghapus transaksi");
       }
 
-      alert("Transaction deleted successfully!");
+      alert("Transaksi berhasil dihapus!");
       onTransactionDeleted?.();
     } catch (error) {
       console.error("Error deleting transaction:", error);
       alert(
-        error instanceof Error ? error.message : "Failed to delete transaction",
+        error instanceof Error ? error.message : "Gagal menghapus transaksi",
       );
     } finally {
       setIsDeleting(false);

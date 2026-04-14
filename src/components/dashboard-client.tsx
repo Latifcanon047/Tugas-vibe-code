@@ -20,10 +20,16 @@ interface Transaction {
 
 interface DashboardClientProps {
   initialTransactions: Transaction[];
-  initialMode: "month" | "year";
+  initialMode: "month" | "year" | "week";
   initialMonth: number;
   initialYear: number;
 }
+
+const getCurrentWeekNumber = (year: number, month: number): number => {
+  const now = new Date();
+  const currentDay = now.getDate();
+  return Math.ceil(currentDay / 7);
+};
 
 export default function DashboardClient({
   initialTransactions,
@@ -36,22 +42,34 @@ export default function DashboardClient({
   const { data: session } = useSession();
   const [transactions, setTransactions] =
     useState<Transaction[]>(initialTransactions);
-  const [mode, setMode] = useState<"month" | "year">(initialMode);
+  const [mode, setMode] = useState<"month" | "year" | "week">(initialMode);
   const [month, setMonth] = useState<number>(initialMonth);
   const [year, setYear] = useState<number>(initialYear);
-  const [loading, setLoading] = useState(false);
+  const currentMonth = new Date().getMonth() + 1;
+  const currentYear = new Date().getFullYear();
+  const [weekNumber, setWeekNumber] = useState<number>(() =>
+    getCurrentWeekNumber(currentYear, currentMonth),
+  );
 
   const buildQueryParams = useCallback(
     (
-      currentMode: "month" | "year",
+      currentMode: "month" | "year" | "week",
       currentMonth: number,
       currentYear: number,
+      currentWeek?: number,
     ) => {
       const params = new URLSearchParams();
       params.set("mode", currentMode);
       params.set("year", currentYear.toString());
       if (currentMode === "month") {
         params.set("month", currentMonth.toString());
+      } else if (currentMode === "week") {
+        params.set("month", currentMonth.toString());
+        params.set(
+          "week",
+          currentWeek?.toString() ||
+            getCurrentWeekNumber(currentYear, currentMonth).toString(),
+        );
       }
       return params;
     },
@@ -61,9 +79,8 @@ export default function DashboardClient({
   const fetchTransactions = useCallback(async () => {
     if (!session?.user?.id) return;
 
-    setLoading(true);
     try {
-      const params = buildQueryParams(mode, month, year);
+      const params = buildQueryParams(mode, month, year, weekNumber);
       const response = await fetch(`/api/transactions?${params}`);
       if (response.ok) {
         const data = await response.json();
@@ -76,22 +93,20 @@ export default function DashboardClient({
       }
     } catch (error) {
       console.error("Failed to fetch transactions:", error);
-    } finally {
-      setLoading(false);
     }
-  }, [session?.user?.id, mode, month, year, buildQueryParams]);
+  }, [session?.user?.id, mode, month, year, weekNumber, buildQueryParams]);
 
   const updateUrl = useCallback(() => {
-    const params = buildQueryParams(mode, month, year);
+    const params = buildQueryParams(mode, month, year, weekNumber);
     router.replace(`${pathname}?${params.toString()}`);
-  }, [buildQueryParams, mode, month, year, pathname, router]);
+  }, [buildQueryParams, mode, month, year, weekNumber, pathname, router]);
 
   useEffect(() => {
     updateUrl();
     fetchTransactions();
   }, [fetchTransactions, updateUrl]);
 
-  const handleModeChange = (newMode: "month" | "year") => {
+  const handleModeChange = (newMode: "month" | "year" | "week") => {
     setMode(newMode);
   };
 
@@ -103,6 +118,36 @@ export default function DashboardClient({
     setYear(newYear);
   };
 
+  const handleWeekChange = (newWeek: number) => {
+    setWeekNumber(newWeek);
+  };
+
+  const getWeeksInMonth = (year: number, monthNum: number) => {
+    const firstDay = new Date(year, monthNum - 1, 1);
+    const lastDay = new Date(year, monthNum, 0);
+    const weeks: { week: number; label: string; range: string }[] = [];
+
+    let currentWeek = 1;
+    let currentDate = new Date(firstDay);
+
+    while (currentDate <= lastDay) {
+      const weekStart = new Date(currentDate);
+      const weekEnd = new Date(currentDate);
+      weekEnd.setDate(weekEnd.getDate() + 6);
+
+      const rangeEnd = weekEnd > lastDay ? lastDay : weekEnd;
+      const label = `Minggu ${currentWeek}`;
+      const range = `${weekStart.getDate()}-${rangeEnd.getDate()} ${weekStart.toLocaleDateString("id-ID", { month: "short" })}`;
+
+      weeks.push({ week: currentWeek, label, range });
+
+      currentWeek++;
+      currentDate.setDate(currentDate.getDate() + 7);
+    }
+
+    return weeks;
+  };
+
   return (
     <main className="min-h-screen bg-slate-50 p-6">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -111,28 +156,28 @@ export default function DashboardClient({
           isAuthenticated={!!session?.user}
         />
 
-        {/* Filter Controls */}
         <div className="rounded-3xl bg-white p-6 shadow-xl border border-slate-200">
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
             <div className="flex items-center gap-4">
               <label className="text-sm font-medium text-slate-700">
-                View:
+                Tampilan:
               </label>
               <select
                 value={mode}
                 onChange={(e) =>
-                  handleModeChange(e.target.value as "month" | "year")
+                  handleModeChange(e.target.value as "month" | "year" | "week")
                 }
                 className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900"
               >
-                <option value="month">Monthly</option>
-                <option value="year">Yearly</option>
+                <option value="month">Perbulan</option>
+                <option value="week">Perminggu</option>
+                <option value="year">Pertahun</option>
               </select>
             </div>
 
             <div className="flex items-center gap-4">
               <label className="text-sm font-medium text-slate-700">
-                Year:
+                Tahun:
               </label>
               <select
                 value={year}
@@ -150,10 +195,10 @@ export default function DashboardClient({
               </select>
             </div>
 
-            {mode === "month" && (
+            {(mode === "month" || mode === "week") && (
               <div className="flex items-center gap-4">
                 <label className="text-sm font-medium text-slate-700">
-                  Month:
+                  Bulan:
                 </label>
                 <select
                   value={month}
@@ -162,9 +207,28 @@ export default function DashboardClient({
                 >
                   {Array.from({ length: 12 }, (_, i) => (
                     <option key={i + 1} value={i + 1}>
-                      {new Date(0, i).toLocaleDateString("en-US", {
+                      {new Date(0, i).toLocaleDateString("id-ID", {
                         month: "long",
                       })}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {mode === "week" && (
+              <div className="flex items-center gap-4">
+                <label className="text-sm font-medium text-slate-700">
+                  Minggu:
+                </label>
+                <select
+                  value={weekNumber}
+                  onChange={(e) => handleWeekChange(parseInt(e.target.value))}
+                  className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900"
+                >
+                  {getWeeksInMonth(year, month).map((w) => (
+                    <option key={w.week} value={w.week}>
+                      {w.label} ({w.range})
                     </option>
                   ))}
                 </select>
@@ -173,18 +237,16 @@ export default function DashboardClient({
           </div>
         </div>
 
-        {/* Summary */}
         <SummaryWithData transactions={transactions} />
 
-        {/* Chart */}
         <TransactionChartWithData
           transactions={transactions}
           mode={mode}
           month={month}
           year={year}
+          weekNumber={weekNumber}
         />
 
-        {/* Form and List */}
         <div className="grid grid-cols-1 xl:grid-cols-[380px_minmax(0,1fr)] gap-6">
           <TransactionFormWrapper onTransactionAdded={fetchTransactions} />
           <TransactionListWithData

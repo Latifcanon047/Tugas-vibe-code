@@ -33,9 +33,10 @@ interface TransactionChartProps {
     type: "income" | "expense";
     date: string;
   }>;
-  mode?: "month" | "year";
+  mode?: "month" | "year" | "week";
   month?: number;
   year?: number;
+  weekNumber?: number;
 }
 
 export default function TransactionChart({
@@ -43,14 +44,45 @@ export default function TransactionChart({
   mode = "month",
   month,
   year,
+  weekNumber,
 }: TransactionChartProps) {
   const selectedYear = year ?? new Date().getFullYear();
   const selectedMonth = month ?? new Date().getMonth() + 1;
 
   let dailyData: Record<string, { income: number; expense: number }> = {};
   let allLabels: string[] = [];
+  let dateKeys: string[] = [];
 
-  if (mode === "month") {
+  if (mode === "week" && weekNumber) {
+    const weekNum = weekNumber;
+    const weekStart = new Date(
+      selectedYear,
+      selectedMonth - 1,
+      1 + (weekNum - 1) * 7,
+    );
+    const dayNames = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
+
+    for (let i = 0; i < 7; i++) {
+      const currentDay = new Date(weekStart);
+      currentDay.setDate(currentDay.getDate() + i);
+      const dateKey = currentDay.toISOString().split("T")[0];
+      allLabels.push(dayNames[i]);
+      dateKeys.push(dateKey);
+      dailyData[dateKey] = { income: 0, expense: 0 };
+    }
+
+    transactions.forEach((transaction) => {
+      const transDate = new Date(transaction.date);
+      const transDateStr = transDate.toISOString().split("T")[0];
+      if (dailyData[transDateStr]) {
+        if (transaction.type === "income") {
+          dailyData[transDateStr].income += transaction.amount;
+        } else {
+          dailyData[transDateStr].expense += transaction.amount;
+        }
+      }
+    });
+  } else if (mode === "month") {
     const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
 
     transactions.forEach((transaction) => {
@@ -111,19 +143,25 @@ export default function TransactionChart({
   const incomedata: number[] = [];
   const expensedata: number[] = [];
 
-  allLabels.forEach((labelKey) => {
-    if (dailyData[labelKey]) {
-      cumulativeIncome += dailyData[labelKey].income;
-      cumulativeExpense += dailyData[labelKey].expense;
+  const keysForLoop = mode === "week" ? dateKeys : allLabels;
+
+  keysForLoop.forEach((key) => {
+    const data = dailyData[key];
+    if (data) {
+      cumulativeIncome += data.income;
+      cumulativeExpense += data.expense;
     }
     cumulativeIncomeData.push(cumulativeIncome);
     cumulativeExpenseData.push(cumulativeExpense);
-    incomedata.push(dailyData[labelKey]?.income || 0);
-    expensedata.push(dailyData[labelKey]?.expense || 0);
+    incomedata.push(data?.income || 0);
+    expensedata.push(data?.expense || 0);
   });
 
   // Create labels
   const labels = allLabels.map((labelKey) => {
+    if (mode === "week") {
+      return labelKey;
+    }
     if (mode === "month") {
       const d = new Date(labelKey);
       return d.toLocaleDateString("id-ID", { month: "short", day: "numeric" });
@@ -140,7 +178,7 @@ export default function TransactionChart({
     labels,
     datasets: [
       {
-        label: "Income",
+        label: "Pemasukan",
         data: incomeData,
         dailyData: incomedata,
         borderColor: "#22c55e",
@@ -155,7 +193,7 @@ export default function TransactionChart({
         pointHoverRadius: 7,
       },
       {
-        label: "Expense",
+        label: "Pengeluaran",
         data: expenseData,
         dailyData: expensedata,
         borderColor: "#ef4444",
@@ -193,8 +231,10 @@ export default function TransactionChart({
         display: true,
         text:
           mode === "month"
-            ? "Income vs Expense Trend (Monthly)"
-            : "Income vs Expense Trend (Yearly)",
+            ? "Tren Pemasukan vs Pengeluaran (Perbulan)"
+            : mode === "week"
+            ? "Tren Pemasukan vs Pengeluaran (Perminggu)"
+            : "Tren Pemasukan vs Pengeluaran (Pertahun)",
         color: "#0f172a",
         font: {
           size: 16,
@@ -242,13 +282,15 @@ export default function TransactionChart({
           font: {
             size: 12,
           },
-callback: (value) => {
-            if (typeof value === 'number') {
+          callback: (value) => {
+            if (typeof value === "number") {
               if (value < 1000000) {
                 return `${(value / 1000).toFixed(0)}rb`;
               } else if (value < 1000000000) {
                 const jt = value / 1000000;
-                return jt % 1 === 0 ? `${jt.toFixed(0)} jt` : `${jt.toFixed(1)} jt`;
+                return jt % 1 === 0
+                  ? `${jt.toFixed(0)} jt`
+                  : `${jt.toFixed(1)} jt`;
               } else {
                 const m = value / 1000000000;
                 return m % 1 === 0 ? `${m.toFixed(0)} m` : `${m.toFixed(1)} m`;
@@ -261,9 +303,9 @@ callback: (value) => {
     },
   };
 
-return (
-    <div className='rounded-3xl bg-white border border-slate-200 p-6 shadow-xl mb-6'>
-      <div className='h-80'>
+  return (
+    <div className="rounded-3xl bg-white border border-slate-200 p-6 shadow-xl mb-6">
+      <div className="h-80">
         <Line data={data} options={options} />
       </div>
     </div>

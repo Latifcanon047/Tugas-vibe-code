@@ -55,7 +55,7 @@ export default function Login() {
 return (
     <div className='min-h-screen flex items-center justify-center bg-linear-to-br from-blue-50 to-indigo-100'>
       <div className='bg-white p-8 rounded-lg shadow-md w-full max-w-md'>
-        <h1 className='text-2xl font-bold text-center mb-6 text-slate-900'>Login</h1>
+        <h1 className='text-2xl font-bold text-center mb-6 text-slate-900'>Masuk</h1>
         <form onSubmit={handleSubmit} autoComplete='off'>
           <div className='mb-4'>
             <label className='block text-slate-700 mb-2'>Email</label>
@@ -128,14 +128,14 @@ return (
                 Memproses...
               </>
             ) : (
-              'Login'
+              'Masuk'
             )}
           </button>
         </form>
         <p className='text-center mt-4 text-slate-600'>
-          Don't have an account?{' '}
+          Belum punya akun?{' '}
           <a href='/register' className='text-blue-500 hover:underline'>
-            Register
+            Daftar
           </a>
         </p>
       </div>
