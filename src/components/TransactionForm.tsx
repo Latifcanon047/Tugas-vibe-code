@@ -9,13 +9,11 @@ interface TransactionFormProps {
     type: "income" | "expense";
     date: string;
   }) => void;
-  onUnauthenticatedAccess?: () => void;
   isLoading?: boolean;
 }
 
 export default function TransactionForm({
   onSubmit,
-  onUnauthenticatedAccess,
   isLoading = false,
 }: TransactionFormProps) {
   const [title, setTitle] = useState("");
@@ -33,11 +31,6 @@ export default function TransactionForm({
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-
-    if (onUnauthenticatedAccess) {
-      onUnauthenticatedAccess();
-      return;
-    }
 
     if (!title.trim() || !amount.trim() || !date.trim()) {
       alert("Please fill in all fields");
@@ -89,7 +82,6 @@ export default function TransactionForm({
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            onFocus={() => onUnauthenticatedAccess?.()}
             placeholder="Salary, Groceries"
             disabled={isLoading}
             className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100 disabled:bg-slate-100"
@@ -105,7 +97,6 @@ export default function TransactionForm({
             inputMode="numeric"
             value={amount}
             onChange={(e) => setAmount(formatAmountDisplay(e.target.value))}
-            onFocus={() => onUnauthenticatedAccess?.()}
             placeholder="0"
             disabled={isLoading}
             className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100 disabled:bg-slate-100"
@@ -120,7 +111,6 @@ export default function TransactionForm({
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            onFocus={() => onUnauthenticatedAccess?.()}
             disabled={isLoading}
             className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100 disabled:bg-slate-100"
           />
