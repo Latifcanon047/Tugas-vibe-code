@@ -37,7 +37,8 @@ export default function TransactionList({
   };
 
   const activeFilterClass = "bg-sky-500 text-white hover:bg-sky-600";
-  const inactiveFilterClass = "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200";
+  const inactiveFilterClass =
+    "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200";
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("id-ID", {
@@ -115,7 +116,9 @@ export default function TransactionList({
               ))}
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              <label className="text-sm font-medium text-slate-700 whitespace-nowrap">Urutkan:</label>
+              <label className="text-sm font-medium text-slate-700 whitespace-nowrap">
+                Urutkan:
+              </label>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
@@ -142,30 +145,63 @@ export default function TransactionList({
           <table className="min-w-full border-separate border-spacing-0">
             <thead className="bg-slate-100 text-slate-600">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.15em]">Tanggal</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.15em]">Judul</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.15em]">Tipe</th>
-                <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-[0.15em]">Jumlah</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.15em]">Dibuat</th>
-                <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-[0.15em]">Aksi</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.15em]">
+                  Tanggal
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.15em]">
+                  Judul
+                </th>
+                <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-[0.15em]">
+                  Jumlah
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.15em]">
+                  Tipe
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.15em]">
+                  Dibuat
+                </th>
+                <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-[0.15em]">
+                  Aksi
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white">
               {sortedTransactions.map((transaction) => (
-                <tr key={transaction.id} className="border-b last:border-b-0 hover:bg-slate-50 transition-colors">
-                  <td className="px-6 py-5 text-sm text-slate-600">{formatDate(transaction.date)}</td>
-                  <td className="px-6 py-5 text-sm font-medium text-slate-900">{transaction.title}</td>
+                <tr
+                  key={transaction.id}
+                  className="border-b last:border-b-0 hover:bg-slate-50 transition-colors"
+                >
+                  <td className="px-6 py-5 text-sm text-slate-600">
+                    {formatDate(transaction.date)}
+                  </td>
+                  <td className="px-6 py-5 text-sm font-medium text-slate-900">
+                    {transaction.title}
+                  </td>
+                  <td
+                    className={`px-6 py-5 text-sm font-semibold text-right ${transaction.type === "income" ? "text-emerald-600" : "text-rose-600"}`}
+                    suppressHydrationWarning
+                  >
+                    {transaction.type === "income" ? "+" : "-"}
+                    {formatCurrency(transaction.amount)}
+                  </td>
                   <td className="px-6 py-5 text-sm">
-                    <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${transaction.type === "income" ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"}`}>
-                      {transaction.type === "income" ? "Pemasukan" : "Pengeluaran"}
+                    <span
+                      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${transaction.type === "income" ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"}`}
+                    >
+                      {transaction.type === "income"
+                        ? "Pemasukan"
+                        : "Pengeluaran"}
                     </span>
                   </td>
-                  <td className={`px-6 py-5 text-sm font-semibold text-right ${transaction.type === "income" ? "text-emerald-600" : "text-rose-600"}`} suppressHydrationWarning>
-                    {transaction.type === "income" ? "+" : "-"}{formatCurrency(transaction.amount)}
+                  <td className="px-6 py-5 text-sm text-slate-600">
+                    {formatCreatedAt(transaction.createdAt)}
                   </td>
-                  <td className="px-6 py-5 text-sm text-slate-600">{formatCreatedAt(transaction.createdAt)}</td>
                   <td className="px-6 py-5 text-center">
-                    <button onClick={() => onDelete(transaction.id)} disabled={isLoading} className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-red-500 hover:border-red-300 hover:text-red-700 disabled:border-slate-200 disabled:text-slate-400 transition">
+                    <button
+                      onClick={() => onDelete(transaction.id)}
+                      disabled={isLoading}
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-red-500 hover:border-red-300 hover:text-red-700 disabled:border-slate-200 disabled:text-slate-400 transition"
+                    >
                       <Trash2 size={18} />
                     </button>
                   </td>
