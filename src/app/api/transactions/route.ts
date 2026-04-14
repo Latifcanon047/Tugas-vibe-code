@@ -4,17 +4,40 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/route";
 
 // GET: Retrieve all transactions or current user's transactions
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { searchParams } = new URL(request.url);
+    const mode = searchParams.get("mode"); // 'month' or 'year'
+    const month = searchParams.get("month"); // 1-12
+    const year = searchParams.get("year"); // YYYY
+
+    let whereClause: any = {
+      userId: session.user.id,
+    };
+
+    if (mode === "month" && month && year) {
+      const startDate = new Date(parseInt(year), parseInt(month) - 1, 1);
+      const endDate = new Date(parseInt(year), parseInt(month), 1);
+      whereClause.date = {
+        gte: startDate,
+        lt: endDate,
+      };
+    } else if (mode === "year" && year) {
+      const startDate = new Date(parseInt(year), 0, 1);
+      const endDate = new Date(parseInt(year) + 1, 0, 1);
+      whereClause.date = {
+        gte: startDate,
+        lt: endDate,
+      };
+    }
+
     const transactions = await prisma.transaction.findMany({
-      where: {
-        userId: session.user.id,
-      },
+      where: whereClause,
       orderBy: {
         createdAt: "desc",
       },

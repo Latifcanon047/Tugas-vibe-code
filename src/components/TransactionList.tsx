@@ -50,6 +50,8 @@ export default function TransactionList({
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
       currency: "IDR",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(amount);
   };
 
@@ -148,6 +150,7 @@ export default function TransactionList({
                       ? "text-emerald-600"
                       : "text-rose-600"
                   }`}
+                  suppressHydrationWarning
                 >
                   {transaction.type === "income" ? "+" : "-"}
                   {formatCurrency(transaction.amount)}

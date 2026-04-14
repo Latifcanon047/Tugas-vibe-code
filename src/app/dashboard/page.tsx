@@ -1,11 +1,8 @@
 import { Suspense } from "react";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import DashboardHeader from "@/components/dashboard-header";
-import SummaryWithData from "@/components/summary-with-data";
-import TransactionChartWithData from "@/components/transaction-chart-with-data";
-import TransactionFormWrapper from "@/components/transaction-form-wrapper";
-import TransactionListWithData from "@/components/transaction-list-with-data";
+import DashboardClient from "@/components/dashboard-client";
+import { prisma } from "@/lib/prisma";
 
 const NavbarSkeleton = () => (
   <div className="rounded-3xl bg-white p-4 shadow-xl border border-slate-200 animate-pulse">
@@ -60,38 +57,85 @@ const ListSkeleton = () => (
   </div>
 );
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams?: { mode?: string; month?: string; year?: string };
+}) {
   const session = await getServerSession(authOptions);
-  const isAuthenticated = !!session?.user?.id;
+  if (!session?.user?.id) {
+    return <div>Unauthorized</div>;
+  }
+
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
+  const queryMode = searchParams?.mode === "year" ? "year" : "month";
+  const parsedYear = parseInt(searchParams?.year ?? "", 10);
+  const parsedMonth = parseInt(searchParams?.month ?? "", 10);
+
+  const initialYear = Number.isInteger(parsedYear) ? parsedYear : currentYear;
+  const initialMonth =
+    queryMode === "month" && parsedMonth >= 1 && parsedMonth <= 12
+      ? parsedMonth
+      : currentMonth + 1;
+
+  const whereClause: any = {
+    userId: session.user.id,
+  };
+
+  if (queryMode === "month") {
+    const startDate = new Date(initialYear, initialMonth - 1, 1);
+    const endDate = new Date(initialYear, initialMonth, 1);
+    whereClause.date = {
+      gte: startDate,
+      lt: endDate,
+    };
+  } else {
+    const startDate = new Date(initialYear, 0, 1);
+    const endDate = new Date(initialYear + 1, 0, 1);
+    whereClause.date = {
+      gte: startDate,
+      lt: endDate,
+    };
+  }
+
+  const initialTransactions = await prisma.transaction.findMany({
+    where: whereClause,
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  const formattedTransactions = initialTransactions.map((t) => ({
+    ...t,
+    date: t.date.toISOString(),
+    createdAt: t.createdAt.toISOString(),
+  }));
 
   return (
-    <main className="min-h-screen bg-slate-100 py-10 px-4">
-      <Suspense fallback={<NavbarSkeleton />}>
-        <DashboardHeader
-          email={session?.user?.email}
-          isAuthenticated={isAuthenticated}
-        />
-      </Suspense>
-
-      <div className="mx-auto max-w-7xl space-y-6">
-        <Suspense fallback={<SummarySkeleton />}>
-          <SummaryWithData />
-        </Suspense>
-
-        <Suspense fallback={<ChartSkeleton />}>
-          <TransactionChartWithData />
-        </Suspense>
-
-        <div className="grid grid-cols-1 xl:grid-cols-[380px_minmax(0,1fr)] gap-6">
-          <Suspense fallback={<FormSkeleton />}>
-            <TransactionFormWrapper />
-          </Suspense>
-
-          <Suspense fallback={<ListSkeleton />}>
-            <TransactionListWithData />
-          </Suspense>
-        </div>
-      </div>
-    </main>
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-slate-50 p-6">
+          <div className="max-w-7xl mx-auto space-y-6">
+            <NavbarSkeleton />
+            <SummarySkeleton />
+            <ChartSkeleton />
+            <div className="grid grid-cols-1 xl:grid-cols-[380px_minmax(0,1fr)] gap-6">
+              <FormSkeleton />
+              <ListSkeleton />
+            </div>
+          </div>
+        </main>
+      }
+    >
+      <DashboardClient
+        initialTransactions={formattedTransactions}
+        initialMode={queryMode}
+        initialMonth={initialMonth}
+        initialYear={initialYear}
+      />
+    </Suspense>
   );
 }

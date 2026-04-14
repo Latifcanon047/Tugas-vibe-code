@@ -33,47 +33,74 @@ interface TransactionChartProps {
     type: "income" | "expense";
     date: string;
   }>;
+  mode?: "month" | "year";
+  month?: number;
+  year?: number;
 }
 
 export default function TransactionChart({
   transactions,
+  mode = "month",
+  month,
+  year,
 }: TransactionChartProps) {
-  // Group transactions by date (YYYY-MM-DD) for current month
-  const now = new Date();
-  const currentMonth = now.getMonth();
-  const currentYear = now.getFullYear();
+  const selectedYear = year ?? new Date().getFullYear();
+  const selectedMonth = month ?? new Date().getMonth() + 1;
 
-  const dailyData: Record<string, { income: number; expense: number }> = {};
+  let dailyData: Record<string, { income: number; expense: number }> = {};
+  let allLabels: string[] = [];
 
-  transactions.forEach((transaction) => {
-    const date = new Date(transaction.date);
+  if (mode === "month") {
+    const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
 
-    // Only include transactions from current month
-    if (
-      date.getMonth() === currentMonth &&
-      date.getFullYear() === currentYear
-    ) {
-      const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-      if (!dailyData[dateKey]) {
-        dailyData[dateKey] = { income: 0, expense: 0 };
+    transactions.forEach((transaction) => {
+      const date = new Date(transaction.date);
+      if (
+        date.getFullYear() === selectedYear &&
+        date.getMonth() + 1 === selectedMonth
+      ) {
+        const dateKey = `${date.getFullYear()}-${String(
+          date.getMonth() + 1,
+        ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+        if (!dailyData[dateKey]) {
+          dailyData[dateKey] = { income: 0, expense: 0 };
+        }
+
+        if (transaction.type === "income") {
+          dailyData[dateKey].income += transaction.amount;
+        } else {
+          dailyData[dateKey].expense += transaction.amount;
+        }
       }
+    });
 
-      if (transaction.type === "income") {
-        dailyData[dateKey].income += transaction.amount;
-      } else {
-        dailyData[dateKey].expense += transaction.amount;
-      }
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateKey = `${selectedYear}-${String(selectedMonth).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+      allLabels.push(dateKey);
     }
-  });
+  } else {
+    transactions.forEach((transaction) => {
+      const date = new Date(transaction.date);
+      if (date.getFullYear() === selectedYear) {
+        const monthKey = `${date.getFullYear()}-${String(
+          date.getMonth() + 1,
+        ).padStart(2, "0")}`;
+        if (!dailyData[monthKey]) {
+          dailyData[monthKey] = { income: 0, expense: 0 };
+        }
 
-  // Generate all dates from 1st to today in current month
-  const allDates: string[] = [];
-  const firstDay = new Date(currentYear, currentMonth, 1);
-  const today = new Date(currentYear, currentMonth, now.getDate());
+        if (transaction.type === "income") {
+          dailyData[monthKey].income += transaction.amount;
+        } else {
+          dailyData[monthKey].expense += transaction.amount;
+        }
+      }
+    });
 
-  for (let d = new Date(firstDay); d <= today; d.setDate(d.getDate() + 1)) {
-    const dateKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-    allDates.push(dateKey);
+    for (let monthIndex = 1; monthIndex <= 12; monthIndex++) {
+      const monthKey = `${selectedYear}-${String(monthIndex).padStart(2, "0")}`;
+      allLabels.push(monthKey);
+    }
   }
 
   // Create cumulative data
@@ -84,21 +111,26 @@ export default function TransactionChart({
   const incomedata: number[] = [];
   const expensedata: number[] = [];
 
-  allDates.forEach((dateKey) => {
-    if (dailyData[dateKey]) {
-      cumulativeIncome += dailyData[dateKey].income;
-      cumulativeExpense += dailyData[dateKey].expense;
+  allLabels.forEach((labelKey) => {
+    if (dailyData[labelKey]) {
+      cumulativeIncome += dailyData[labelKey].income;
+      cumulativeExpense += dailyData[labelKey].expense;
     }
     cumulativeIncomeData.push(cumulativeIncome);
     cumulativeExpenseData.push(cumulativeExpense);
-    incomedata.push(dailyData[dateKey]?.income || 0);
-    expensedata.push(dailyData[dateKey]?.expense || 0);
+    incomedata.push(dailyData[labelKey]?.income || 0);
+    expensedata.push(dailyData[labelKey]?.expense || 0);
   });
 
   // Create labels
-  const labels = allDates.map((dateKey) => {
-    const d = new Date(dateKey);
-    return d.toLocaleDateString("id-ID", { month: "short", day: "numeric" });
+  const labels = allLabels.map((labelKey) => {
+    if (mode === "month") {
+      const d = new Date(labelKey);
+      return d.toLocaleDateString("id-ID", { month: "short", day: "numeric" });
+    }
+
+    const d = new Date(`${labelKey}-01`);
+    return d.toLocaleDateString("id-ID", { month: "short" });
   });
 
   const incomeData = cumulativeIncomeData;
@@ -159,7 +191,10 @@ export default function TransactionChart({
       },
       title: {
         display: true,
-        text: "Income vs Expense Trend",
+        text:
+          mode === "month"
+            ? "Income vs Expense Trend (Monthly)"
+            : "Income vs Expense Trend (Yearly)",
         color: "#0f172a",
         font: {
           size: 16,

@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import TransactionList from "@/components/TransactionList";
 
@@ -15,13 +14,14 @@ interface Transaction {
 
 interface TransactionListWrapperProps {
   transactions: Transaction[];
+  onTransactionDeleted?: () => void;
 }
 
 export default function TransactionListWrapper({
   transactions,
+  onTransactionDeleted,
 }: TransactionListWrapperProps) {
   const [isDeleting, setIsDeleting] = useState(false);
-  const router = useRouter();
 
   const handleDelete = async (id: number) => {
     if (!confirm("Are you sure you want to delete this transaction?")) {
@@ -40,7 +40,7 @@ export default function TransactionListWrapper({
       }
 
       alert("Transaction deleted successfully!");
-      router.refresh();
+      onTransactionDeleted?.();
     } catch (error) {
       console.error("Error deleting transaction:", error);
       alert(

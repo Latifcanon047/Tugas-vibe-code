@@ -5,7 +5,13 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import TransactionForm from "@/components/TransactionForm";
 
-export default function TransactionFormWrapper() {
+interface TransactionFormWrapperProps {
+  onTransactionAdded?: () => void;
+}
+
+export default function TransactionFormWrapper({
+  onTransactionAdded,
+}: TransactionFormWrapperProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const router = useRouter();
@@ -39,6 +45,7 @@ export default function TransactionFormWrapper() {
       }
 
       alert("Transaction added successfully!");
+      onTransactionAdded?.();
       router.refresh();
     } catch (error) {
       console.error("Error adding transaction:", error);

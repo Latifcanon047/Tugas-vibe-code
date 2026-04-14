@@ -1,7 +1,4 @@
 import Summary from "@/components/Summary";
-import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 interface Transaction {
   id: number;
@@ -12,13 +9,12 @@ interface Transaction {
   createdAt: string;
 }
 
-export default async function SummaryWithData() {
-  const session = await getServerSession(authOptions);
-  const transactions = session?.user?.id
-    ? await prisma.transaction.findMany({
-        where: { userId: session.user.id },
-      })
-    : [];
+interface SummaryWithDataProps {
+  transactions: Transaction[];
+}
 
+export default function SummaryWithData({
+  transactions,
+}: SummaryWithDataProps) {
   return <Summary transactions={transactions} />;
 }

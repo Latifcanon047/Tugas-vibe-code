@@ -1,7 +1,4 @@
 import TransactionChart from "@/components/TransactionChart";
-import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 interface Transaction {
   id: number;
@@ -12,19 +9,25 @@ interface Transaction {
   createdAt: string;
 }
 
-export default async function TransactionChartWithData() {
-  const session = await getServerSession(authOptions);
-  const transactions = session?.user?.id
-    ? await prisma.transaction.findMany({
-        where: { userId: session.user.id },
-      })
-    : [];
+interface TransactionChartWithDataProps {
+  transactions: Transaction[];
+  mode: "month" | "year";
+  month: number;
+  year: number;
+}
 
-  const formattedTransactions = transactions.map((t) => ({
-    ...t,
-    date: t.date.toISOString(),
-    createdAt: t.createdAt.toISOString(),
-  }));
-
-  return <TransactionChart transactions={formattedTransactions} />;
+export default function TransactionChartWithData({
+  transactions,
+  mode,
+  month,
+  year,
+}: TransactionChartWithDataProps) {
+  return (
+    <TransactionChart
+      transactions={transactions}
+      mode={mode}
+      month={month}
+      year={year}
+    />
+  );
 }

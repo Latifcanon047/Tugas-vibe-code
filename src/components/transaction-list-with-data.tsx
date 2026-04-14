@@ -1,7 +1,4 @@
 import TransactionListWrapper from "@/components/transaction-list-wrapper";
-import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 interface Transaction {
   id: number;
@@ -12,19 +9,19 @@ interface Transaction {
   createdAt: string;
 }
 
-export default async function TransactionListWithData() {
-  const session = await getServerSession(authOptions);
-  const transactions = session?.user?.id
-    ? await prisma.transaction.findMany({
-        where: { userId: session.user.id },
-      })
-    : [];
+interface TransactionListWithDataProps {
+  transactions: Transaction[];
+  onTransactionDeleted?: () => void;
+}
 
-  const formattedTransactions = transactions.map((t) => ({
-    ...t,
-    date: t.date.toISOString(),
-    createdAt: t.createdAt.toISOString(),
-  }));
-
-  return <TransactionListWrapper transactions={formattedTransactions} />;
+export default function TransactionListWithData({
+  transactions,
+  onTransactionDeleted,
+}: TransactionListWithDataProps) {
+  return (
+    <TransactionListWrapper
+      transactions={transactions}
+      onTransactionDeleted={onTransactionDeleted}
+    />
+  );
 }
