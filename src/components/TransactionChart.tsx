@@ -242,9 +242,17 @@ export default function TransactionChart({
           font: {
             size: 12,
           },
-          callback: (value) => {
-            if (typeof value === "number") {
-              return `Rp ${value.toLocaleString("id-ID")}`;
+callback: (value) => {
+            if (typeof value === 'number') {
+              if (value < 1000000) {
+                return `${(value / 1000).toFixed(0)}rb`;
+              } else if (value < 1000000000) {
+                const jt = value / 1000000;
+                return jt % 1 === 0 ? `${jt.toFixed(0)} jt` : `${jt.toFixed(1)} jt`;
+              } else {
+                const m = value / 1000000000;
+                return m % 1 === 0 ? `${m.toFixed(0)} m` : `${m.toFixed(1)} m`;
+              }
             }
             return value;
           },
@@ -253,9 +261,9 @@ export default function TransactionChart({
     },
   };
 
-  return (
-    <div className="rounded-3xl bg-white border border-slate-200 p-6 shadow-xl mb-6">
-      <div className="h-80">
+return (
+    <div className='rounded-3xl bg-white border border-slate-200 p-6 shadow-xl mb-6'>
+      <div className='h-80'>
         <Line data={data} options={options} />
       </div>
     </div>
