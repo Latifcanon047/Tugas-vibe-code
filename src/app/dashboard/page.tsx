@@ -60,20 +60,18 @@ const ListSkeleton = () => (
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams?: { mode?: string; month?: string; year?: string };
+  searchParams?: Promise<{ mode?: string; month?: string; year?: string }>;
 }) {
+  const params = searchParams ? await searchParams : undefined;
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    return <div>Unauthorized</div>;
-  }
 
   const now = new Date();
   const currentMonth = now.getMonth();
   const currentYear = now.getFullYear();
 
-  const queryMode = searchParams?.mode === "year" ? "year" : "month";
-  const parsedYear = parseInt(searchParams?.year ?? "", 10);
-  const parsedMonth = parseInt(searchParams?.month ?? "", 10);
+  const queryMode = params?.mode === "year" ? "year" : "month";
+  const parsedYear = parseInt(params?.year ?? "", 10);
+  const parsedMonth = parseInt(params?.month ?? "", 10);
 
   const initialYear = Number.isInteger(parsedYear) ? parsedYear : currentYear;
   const initialMonth =
@@ -82,7 +80,7 @@ export default async function DashboardPage({
       : currentMonth + 1;
 
   const whereClause: any = {
-    userId: session.user.id,
+    userId: session?.user?.id,
   };
 
   if (queryMode === "month") {
@@ -101,12 +99,12 @@ export default async function DashboardPage({
     };
   }
 
-  const initialTransactions = await prisma.transaction.findMany({
-    where: whereClause,
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+  const initialTransactions = session?.user?.id
+    ? await prisma.transaction.findMany({
+        where: whereClause,
+        orderBy: { createdAt: "desc" },
+      })
+    : [];
 
   const formattedTransactions = initialTransactions.map((t) => ({
     ...t,
