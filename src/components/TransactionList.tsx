@@ -20,7 +20,7 @@ interface TransactionListProps {
   isLoading?: boolean;
 }
 
-type SortOption = "date" | "createdAt";
+type SortOption = "date" | "createdAt" | "highest" | "lowest";
 
 export default function TransactionList({
   transactions,
@@ -75,48 +75,55 @@ export default function TransactionList({
   });
 
   const sortedTransactions = [...filteredTransactions].sort((a, b) => {
-    const dateA = new Date(sortBy === "date" ? a.date : a.createdAt);
-    const dateB = new Date(sortBy === "date" ? b.date : b.createdAt);
-    return dateB.getTime() - dateA.getTime();
+    if (sortBy === "date") {
+      return new Date(b.date).getTime() - new Date(a.date).getTime();
+    } else if (sortBy === "createdAt") {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    } else if (sortBy === "highest") {
+      return b.amount - a.amount;
+    } else if (sortBy === "lowest") {
+      return a.amount - b.amount;
+    }
+    return 0;
   });
 
   return (
     <div className="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
-      <div className="flex flex-col gap-4 p-6 border-b border-slate-200 bg-slate-50">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col gap-2 md:gap-4 p-3 md:p-6 border-b border-slate-200 bg-slate-50">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 md:gap-4">
           {transactions.length > 0 ? (
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
                 Aktivitas Terbaru
               </p>
-              <p className="mt-1 text-base text-slate-600">
+              <p className="mt-1 text-sm text-slate-600 hidden md:block">
                 Transaksi pemasukan dan pengeluaran terbaru di satu tempat.
               </p>
             </div>
           ) : (
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
                 Transaksi
               </p>
-              <p className="mt-1 text-base text-slate-600">
+              <p className="mt-1 text-sm text-slate-600 hidden md:block">
                 Lihat dan kelola transaksi Anda.
               </p>
             </div>
           )}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 md:gap-3">
             <div className="flex rounded-2xl overflow-hidden border border-slate-200">
               {(Object.keys(filterLabels) as FilterOption[]).map((option) => (
                 <button
                   key={option}
                   onClick={() => setFilterBy(option)}
-                  className={`px-4 py-2 text-sm font-medium transition ${filterBy === option ? activeFilterClass : inactiveFilterClass}`}
+                  className={`px-2 md:px-4 py-2 text-xs md:text-sm font-medium transition ${filterBy === option ? activeFilterClass : inactiveFilterClass}`}
                 >
                   {filterLabels[option]}
                 </button>
               ))}
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              <label className="text-sm font-medium text-slate-700 whitespace-nowrap">
+              <label className="text-xs md:text-sm font-medium text-slate-700 whitespace-nowrap">
                 Urutkan:
               </label>
               <select
@@ -126,15 +133,17 @@ export default function TransactionList({
               >
                 <option value="createdAt">Tanggal Input</option>
                 <option value="date">Tanggal Transaksi</option>
+                <option value="highest">Jumlah Terbesar</option>
+                <option value="lowest">Jumlah Terkecil</option>
               </select>
             </div>
           </div>
         </div>
       </div>
       {filteredTransactions.length === 0 ? (
-        <div className="p-8 text-center text-slate-500">
-          <p className="text-lg font-medium">Tidak ada transaksi</p>
-          <p className="mt-2 text-sm">
+        <div className="p-4 md:p-8 text-center text-slate-500">
+          <p className="text-sm md:text-lg font-medium">Tidak ada transaksi</p>
+          <p className="mt-1 md:mt-2 text-xs md:text-sm">
             {filterBy === "all"
               ? "Belum ada transaksi untuk periode ini."
               : `Belum ada transaksi ${filterBy === "income" ? "pemasukan" : "pengeluaran"} untuk periode ini.`}
@@ -145,22 +154,22 @@ export default function TransactionList({
           <table className="min-w-full border-separate border-spacing-0">
             <thead className="bg-slate-100 text-slate-600">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.15em]">
+                <th className="px-3 md:px-6 py-3 md:py-4 text-left text-xs font-semibold uppercase tracking-[0.15em]">
                   Tanggal
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.15em]">
+                <th className="px-3 md:px-6 py-3 md:py-4 text-left text-xs font-semibold uppercase tracking-[0.15em]">
                   Judul
                 </th>
-                <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-[0.15em]">
+                <th className="px-3 md:px-6 py-3 md:py-4 text-right text-xs font-semibold uppercase tracking-[0.15em]">
                   Jumlah
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.15em]">
+                <th className="px-3 md:px-6 py-3 md:py-4 text-left text-xs font-semibold uppercase tracking-[0.15em] hidden md:table-cell">
                   Tipe
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.15em]">
+                <th className="px-3 md:px-6 py-3 md:py-4 text-left text-xs font-semibold uppercase tracking-[0.15em] hidden md:table-cell">
                   Dibuat
                 </th>
-                <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-[0.15em]">
+                <th className="px-3 md:px-6 py-3 md:py-4 text-center text-xs font-semibold uppercase tracking-[0.15em]">
                   Aksi
                 </th>
               </tr>
@@ -171,32 +180,32 @@ export default function TransactionList({
                   key={transaction.id}
                   className="border-b last:border-b-0 hover:bg-slate-50 transition-colors"
                 >
-                  <td className="px-6 py-5 text-sm text-slate-600">
+                  <td className="px-3 md:px-6 py-3 md:py-5 text-xs md:text-sm text-slate-600">
                     {formatDate(transaction.date)}
                   </td>
-                  <td className="px-6 py-5 text-sm font-medium text-slate-900">
+                  <td className="px-3 md:px-6 py-3 md:py-5 text-xs md:text-sm font-medium text-slate-900">
                     {transaction.title}
                   </td>
                   <td
-                    className={`px-6 py-5 text-sm font-semibold text-right ${transaction.type === "income" ? "text-emerald-600" : "text-rose-600"}`}
+                    className={`px-3 md:px-6 py-3 md:py-5 text-xs md:text-sm font-semibold text-right ${transaction.type === "income" ? "text-emerald-600" : "text-rose-600"}`}
                     suppressHydrationWarning
                   >
                     {transaction.type === "income" ? "+" : "-"}
                     {formatCurrency(transaction.amount)}
                   </td>
-                  <td className="px-6 py-5 text-sm">
+                  <td className="px-3 md:px-6 py-3 md:py-5 text-xs md:text-sm hidden md:table-cell">
                     <span
-                      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${transaction.type === "income" ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"}`}
+                      className={`inline-flex items-center rounded-full px-2 md:px-3 py-0.5 md:py-1 text-xs font-semibold ${transaction.type === "income" ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"}`}
                     >
                       {transaction.type === "income"
                         ? "Pemasukan"
                         : "Pengeluaran"}
                     </span>
                   </td>
-                  <td className="px-6 py-5 text-sm text-slate-600">
+                  <td className="px-3 md:px-6 py-3 md:py-5 text-xs md:text-sm text-slate-600 hidden md:table-cell">
                     {formatCreatedAt(transaction.createdAt)}
                   </td>
-                  <td className="px-6 py-5 text-center">
+                  <td className="px-3 md:px-6 py-3 md:py-5 text-center">
                     <button
                       onClick={() => onDelete(transaction.id)}
                       disabled={isLoading}

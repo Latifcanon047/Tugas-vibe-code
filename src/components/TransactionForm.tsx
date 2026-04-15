@@ -60,22 +60,22 @@ export default function TransactionForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-white rounded-3xl shadow-xl border border-slate-200 p-6 mb-6"
+      className="bg-white rounded-3xl shadow-xl border border-slate-200 p-3 md:p-6 mb-6"
     >
-      <div className="flex flex-col gap-4 mb-6">
+      <div className="flex flex-col gap-2 md:gap-4 mb-4 md:mb-6">
         <div>
-          <p className="text-sm uppercase tracking-[0.3em] text-slate-400">
+          <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
             Tambah transaksi
           </p>
-          <h2 className="text-2xl font-semibold text-slate-900">
+          <h2 className="text-lg md:text-2xl font-semibold text-slate-900">
             Masukkan data baru
           </h2>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 mb-4">
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">
+          <label className="block text-xs md:text-sm font-medium text-slate-700 mb-1 md:mb-2">
             Judul
           </label>
           <input
@@ -84,12 +84,12 @@ export default function TransactionForm({
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Gaji, Belanja"
             disabled={isLoading}
-            className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100 disabled:bg-slate-100"
+            className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-3 md:px-4 py-2 md:py-3 text-sm text-slate-900 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100 disabled:bg-slate-100"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">
+          <label className="block text-xs md:text-sm font-medium text-slate-700 mb-1 md:mb-2">
             Jumlah
           </label>
           <input
@@ -99,12 +99,12 @@ export default function TransactionForm({
             onChange={(e) => setAmount(formatAmountDisplay(e.target.value))}
             placeholder="0"
             disabled={isLoading}
-            className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100 disabled:bg-slate-100"
+            className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-3 md:px-4 py-2 md:py-3 text-sm text-slate-900 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100 disabled:bg-slate-100"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">
+          <label className="block text-xs md:text-sm font-medium text-slate-700 mb-1 md:mb-2">
             Tanggal
           </label>
           <input
@@ -112,18 +112,18 @@ export default function TransactionForm({
             value={date}
             onChange={(e) => setDate(e.target.value)}
             disabled={isLoading}
-            className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100 disabled:bg-slate-100"
+            className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-3 md:px-4 py-2 md:py-3 text-sm text-slate-900 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100 disabled:bg-slate-100"
           />
         </div>
       </div>
 
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-slate-700 mb-3">
+      <div className="mb-4 md:mb-6">
+        <label className="block text-xs md:text-sm font-medium text-slate-700 mb-2 md:mb-3">
           Tipe
         </label>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2 md:gap-3">
           <label
-            className={`flex cursor-pointer items-center justify-center rounded-2xl border px-4 py-3 text-sm font-medium transition ${
+            className={`flex cursor-pointer items-center justify-center rounded-2xl border px-3 md:px-4 py-2 md:py-3 text-xs md:text-sm font-medium transition ${
               type === "income"
                 ? "border-emerald-500 bg-emerald-50 text-emerald-900"
                 : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
@@ -140,7 +140,7 @@ export default function TransactionForm({
             Pemasukan
           </label>
           <label
-            className={`flex cursor-pointer items-center justify-center rounded-2xl border px-4 py-3 text-sm font-medium transition ${
+            className={`flex cursor-pointer items-center justify-center rounded-2xl border px-3 md:px-4 py-2 md:py-3 text-xs md:text-sm font-medium transition ${
               type === "expense"
                 ? "border-rose-500 bg-rose-50 text-rose-900"
                 : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
@@ -162,7 +162,7 @@ export default function TransactionForm({
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full rounded-2xl bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 text-white font-semibold py-3 transition"
+        className="w-full rounded-2xl bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 text-white font-semibold py-2 md:py-3 text-sm md:text-base transition"
       >
         {isLoading ? "Menambahkan..." : "Tambah Transaksi"}
       </button>

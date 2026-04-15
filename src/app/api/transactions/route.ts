@@ -32,7 +32,13 @@ export async function GET(request: NextRequest) {
       const weekNumber = parseInt(week);
       const yearNum = parseInt(year);
       const monthNum = parseInt(month);
-      const weekStart = new Date(yearNum, monthNum - 1, 1 + (weekNumber - 1) * 7);
+      const firstDayOfMonth = new Date(yearNum, monthNum - 1, 1);
+      const firstSunday = new Date(firstDayOfMonth);
+      const dayOfWeek = firstSunday.getDay();
+      firstSunday.setDate(firstSunday.getDate() + (dayOfWeek === 0 ? 0 : 7 - dayOfWeek));
+      
+      const weekStart = new Date(firstSunday);
+      weekStart.setDate(weekStart.getDate() + (weekNumber - 1) * 7);
       const weekEnd = new Date(weekStart);
       weekEnd.setDate(weekEnd.getDate() + 6);
       whereClause.date = {

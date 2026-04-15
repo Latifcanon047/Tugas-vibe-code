@@ -55,18 +55,20 @@ export default function TransactionChart({
 
   if (mode === "week" && weekNumber) {
     const weekNum = weekNumber;
-    const weekStart = new Date(
-      selectedYear,
-      selectedMonth - 1,
-      1 + (weekNum - 1) * 7,
-    );
-    const dayNames = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
+    const firstDayOfMonth = new Date(selectedYear, selectedMonth - 1, 1);
+    const firstSunday = new Date(firstDayOfMonth);
+    const dayOfWeek = firstSunday.getDay();
+    firstSunday.setDate(firstSunday.getDate() + (dayOfWeek === 0 ? 0 : 7 - dayOfWeek));
+    
+    const weekStart = new Date(firstSunday);
+    weekStart.setDate(weekStart.getDate() + (weekNum - 1) * 7);
+    const dayNames = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
 
     for (let i = 0; i < 7; i++) {
       const currentDay = new Date(weekStart);
       currentDay.setDate(currentDay.getDate() + i);
       const dateKey = currentDay.toISOString().split("T")[0];
-      allLabels.push(dayNames[i]);
+      allLabels.push(dayNames[currentDay.getDay()]);
       dateKeys.push(dateKey);
       dailyData[dateKey] = { income: 0, expense: 0 };
     }
@@ -233,8 +235,8 @@ export default function TransactionChart({
           mode === "month"
             ? "Tren Pemasukan vs Pengeluaran (Perbulan)"
             : mode === "week"
-            ? "Tren Pemasukan vs Pengeluaran (Perminggu)"
-            : "Tren Pemasukan vs Pengeluaran (Pertahun)",
+              ? "Tren Pemasukan vs Pengeluaran (Perminggu)"
+              : "Tren Pemasukan vs Pengeluaran (Pertahun)",
         color: "#0f172a",
         font: {
           size: 16,
@@ -304,7 +306,7 @@ export default function TransactionChart({
   };
 
   return (
-    <div className="rounded-3xl bg-white border border-slate-200 p-6 shadow-xl mb-6">
+    <div className="rounded-3xl bg-white border border-slate-200 p-3 md:p-6 shadow-xl mb-6">
       <div className="h-80">
         <Line data={data} options={options} />
       </div>

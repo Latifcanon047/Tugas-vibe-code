@@ -27,8 +27,29 @@ interface DashboardClientProps {
 
 const getCurrentWeekNumber = (year: number, month: number): number => {
   const now = new Date();
-  const currentDay = now.getDate();
-  return Math.ceil(currentDay / 7);
+  const firstDayOfMonth = new Date(year, month - 1, 1);
+  const lastDayOfMonth = new Date(year, month, 0);
+
+  const firstSunday = new Date(firstDayOfMonth);
+  const dayOfWeek = firstSunday.getDay();
+  firstSunday.setDate(
+    firstSunday.getDate() + (dayOfWeek === 0 ? 0 : 7 - dayOfWeek),
+  );
+
+  if (now > lastDayOfMonth) {
+    const totalWeeks = Math.ceil(lastDayOfMonth.getDate() / 7);
+    return totalWeeks;
+  }
+
+  let weekNumber = 0;
+  let weekStart = new Date(firstSunday);
+
+  while (weekStart < now) {
+    weekStart.setDate(weekStart.getDate() + 7);
+    weekNumber++;
+  }
+
+  return weekNumber;
 };
 
 export default function DashboardClient({
@@ -127,8 +148,14 @@ export default function DashboardClient({
     const lastDay = new Date(year, monthNum, 0);
     const weeks: { week: number; label: string; range: string }[] = [];
 
+    const firstSunday = new Date(firstDay);
+    const dayOfWeek = firstSunday.getDay();
+    firstSunday.setDate(
+      firstSunday.getDate() + (dayOfWeek === 0 ? 0 : 7 - dayOfWeek),
+    );
+
     let currentWeek = 1;
-    let currentDate = new Date(firstDay);
+    let currentDate = new Date(firstSunday);
 
     while (currentDate <= lastDay) {
       const weekStart = new Date(currentDate);
@@ -155,11 +182,11 @@ export default function DashboardClient({
           email={session?.user?.email}
           isAuthenticated={!!session?.user}
         />
-
         <div className="rounded-3xl bg-white p-6 shadow-xl border border-slate-200">
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-            <div className="flex items-center gap-4">
-              <label className="text-sm font-medium text-slate-700">
+          <div className="flex flex-col gap-4">
+            {/* Tampilan */}
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium text-slate-700 whitespace-nowrap">
                 Tampilan:
               </label>
               <select
@@ -167,7 +194,7 @@ export default function DashboardClient({
                 onChange={(e) =>
                   handleModeChange(e.target.value as "month" | "year" | "week")
                 }
-                className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900"
+                className="flex-1 px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900"
               >
                 <option value="month">Perbulan</option>
                 <option value="week">Perminggu</option>
@@ -175,14 +202,15 @@ export default function DashboardClient({
               </select>
             </div>
 
-            <div className="flex items-center gap-4">
-              <label className="text-sm font-medium text-slate-700">
+            {/* Tahun */}
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium text-slate-700 whitespace-nowrap">
                 Tahun:
               </label>
               <select
                 value={year}
                 onChange={(e) => handleYearChange(parseInt(e.target.value))}
-                className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900"
+                className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900"
               >
                 {Array.from({ length: 5 }, (_, i) => {
                   const y = new Date().getFullYear() - 2 + i;
@@ -195,15 +223,16 @@ export default function DashboardClient({
               </select>
             </div>
 
+            {/* Bulan */}
             {(mode === "month" || mode === "week") && (
-              <div className="flex items-center gap-4">
-                <label className="text-sm font-medium text-slate-700">
+              <div className="flex items-center gap-2">
+                <label className="text-sm font-medium text-slate-700 whitespace-nowrap">
                   Bulan:
                 </label>
                 <select
                   value={month}
                   onChange={(e) => handleMonthChange(parseInt(e.target.value))}
-                  className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900"
+                  className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900"
                 >
                   {Array.from({ length: 12 }, (_, i) => (
                     <option key={i + 1} value={i + 1}>
@@ -216,15 +245,16 @@ export default function DashboardClient({
               </div>
             )}
 
+            {/* Minggu */}
             {mode === "week" && (
-              <div className="flex items-center gap-4">
-                <label className="text-sm font-medium text-slate-700">
+              <div className="flex items-center gap-2">
+                <label className="text-sm font-medium text-slate-700 whitespace-nowrap">
                   Minggu:
                 </label>
                 <select
                   value={weekNumber}
                   onChange={(e) => handleWeekChange(parseInt(e.target.value))}
-                  className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900"
+                  className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-slate-900"
                 >
                   {getWeeksInMonth(year, month).map((w) => (
                     <option key={w.week} value={w.week}>
@@ -236,7 +266,6 @@ export default function DashboardClient({
             )}
           </div>
         </div>
-
         <SummaryWithData transactions={transactions} />
 
         <TransactionChartWithData
