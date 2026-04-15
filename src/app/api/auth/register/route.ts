@@ -6,22 +6,33 @@ const prisma = new PrismaClient();
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await request.json();
+    const { email, username, password } = await request.json();
 
-    if (!email || !password) {
+    if (!email || !username || !password) {
       return NextResponse.json(
-        { error: "Email dan password harus diisi" },
+        { error: "Email, username, dan password harus diisi" },
         { status: 400 },
       );
     }
 
-    const existingUser = await prisma.user.findUnique({
+    const existingEmail = await prisma.user.findUnique({
       where: { email },
     });
 
-    if (existingUser) {
+    if (existingEmail) {
       return NextResponse.json(
         { error: "Email sudah terdaftar" },
+        { status: 400 },
+      );
+    }
+
+    const existingUsername = await prisma.user.findUnique({
+      where: { username },
+    });
+
+    if (existingUsername) {
+      return NextResponse.json(
+        { error: "Username sudah terdaftar" },
         { status: 400 },
       );
     }
@@ -31,6 +42,7 @@ export async function POST(request: NextRequest) {
     const user = await prisma.user.create({
       data: {
         email,
+        username,
         password: hashedPassword,
       },
     });

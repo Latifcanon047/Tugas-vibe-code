@@ -5,12 +5,12 @@ import { signOut } from "next-auth/react";
 import Image from "next/image";
 
 interface DashboardHeaderProps {
-  email?: string | null;
+  username?: string | null;
   isAuthenticated: boolean;
 }
 
 export default function DashboardHeader({
-  email,
+  username,
   isAuthenticated,
 }: DashboardHeaderProps) {
   const router = useRouter();
@@ -37,8 +37,8 @@ export default function DashboardHeader({
 
         {isAuthenticated ? (
           <div className="flex items-center space-x-2 md:space-x-4">
-            <span className="text-xs md:text-sm font-medium text-slate-600 truncate max-w-[100px] md:max-w-none">
-              {email}
+            <span className="text-xs md:text-sm font-medium text-slate-600 truncate max-w-25 md:max-w-none">
+              {username}
             </span>
 
             {/* LOGOUT BUTTON (RED) */}

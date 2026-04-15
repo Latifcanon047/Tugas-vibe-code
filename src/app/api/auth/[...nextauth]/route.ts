@@ -41,6 +41,7 @@ export const authOptions = {
         return {
           id: user.id,
           email: user.email,
+          username: user.username || "",
         };
       },
     }),
@@ -52,15 +53,25 @@ export const authOptions = {
     signIn: "/login",
   },
   callbacks: {
-    async jwt({ token, user }: { token: JWT; user?: { id: string } | null }) {
+    async jwt({ token, user }: { token: JWT; user?: { id: string; username?: string } | null }) {
       if (user) {
         token.id = user.id;
+        token.username = user.username || "";
+      } else if (token.id) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { username: true },
+        });
+        if (dbUser) {
+          token.username = dbUser.username || "";
+        }
       }
       return token;
     },
     async session({ session, token }: { session: Session; token: JWT }) {
       if (token) {
         session.user.id = token.id as string;
+        session.user.username = token.username || "";
       }
       return session;
     },

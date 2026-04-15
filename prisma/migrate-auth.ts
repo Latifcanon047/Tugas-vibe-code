@@ -11,6 +11,7 @@ async function main() {
     update: {},
     create: {
       email: "default@example.com",
+      username: "default",
       password: hashedPassword,
     },
   });
