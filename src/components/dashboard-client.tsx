@@ -183,7 +183,7 @@ export default function DashboardClient({
           isAuthenticated={!!session?.user}
         />
         <div className="rounded-3xl bg-white p-6 shadow-xl border border-slate-200">
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col lg:flex-row gap-4">
             {/* Tampilan */}
             <div className="flex items-center gap-2">
               <label className="text-sm font-medium text-slate-700 whitespace-nowrap">

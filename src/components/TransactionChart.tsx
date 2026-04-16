@@ -25,6 +25,13 @@ ChartJS.register(
   Filler,
 );
 
+function formatLocalDate(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 interface TransactionChartProps {
   transactions: Array<{
     id: number;
@@ -58,8 +65,10 @@ export default function TransactionChart({
     const firstDayOfMonth = new Date(selectedYear, selectedMonth - 1, 1);
     const firstSunday = new Date(firstDayOfMonth);
     const dayOfWeek = firstSunday.getDay();
-    firstSunday.setDate(firstSunday.getDate() + (dayOfWeek === 0 ? 0 : 7 - dayOfWeek));
-    
+    firstSunday.setDate(
+      firstSunday.getDate() + (dayOfWeek === 0 ? 0 : 7 - dayOfWeek),
+    );
+
     const weekStart = new Date(firstSunday);
     weekStart.setDate(weekStart.getDate() + (weekNum - 1) * 7);
     const dayNames = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
@@ -67,7 +76,7 @@ export default function TransactionChart({
     for (let i = 0; i < 7; i++) {
       const currentDay = new Date(weekStart);
       currentDay.setDate(currentDay.getDate() + i);
-      const dateKey = currentDay.toISOString().split("T")[0];
+      const dateKey = formatLocalDate(currentDay);
       allLabels.push(dayNames[currentDay.getDay()]);
       dateKeys.push(dateKey);
       dailyData[dateKey] = { income: 0, expense: 0 };
@@ -75,7 +84,7 @@ export default function TransactionChart({
 
     transactions.forEach((transaction) => {
       const transDate = new Date(transaction.date);
-      const transDateStr = transDate.toISOString().split("T")[0];
+      const transDateStr = formatLocalDate(transDate);
       if (dailyData[transDateStr]) {
         if (transaction.type === "income") {
           dailyData[transDateStr].income += transaction.amount;
